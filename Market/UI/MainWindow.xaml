@@ -54,7 +54,8 @@
                             Content="👥  Clientes" Click="BtnClientes_Click"/>
                     <Button x:Name="BtnPdv" Style="{StaticResource NavButton}"
                             Content="🛒  Vendas (PDV)" Click="BtnPdv_Click"/>
-                    <Button Style="{StaticResource NavButton}" Content="📜  Histórico de Vendas" IsEnabled="False"/>
+                    <Button x:Name="BtnHistorico" Style="{StaticResource NavButton}"
+                            Content="📜  Histórico de Vendas" Click="BtnHistorico_Click"/>
                     <Button Style="{StaticResource NavButton}" Content="📊  Relatório de Lucros" IsEnabled="False"/>
                 </StackPanel>
 

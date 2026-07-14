@@ -32,4 +32,7 @@ public partial class MainWindow : Window
 
     private void BtnPdv_Click(object sender, RoutedEventArgs e)
         => Navegar<PdvView>();
+
+    private void BtnHistorico_Click(object sender, RoutedEventArgs e)
+        => Navegar<HistoricoVendasView>();
 }

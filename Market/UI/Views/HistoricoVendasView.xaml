@@ -1,0 +1,85 @@
+<UserControl x:Class="Market.UI.Views.HistoricoVendasView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="560">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Histórico de Vendas" FontSize="22" FontWeight="Bold"/>
+        <TextBlock DockPanel.Dock="Top" x:Name="TxtContador" Foreground="Gray" Margin="0,4,0,10"/>
+
+        <!-- Filtros -->
+        <Border DockPanel.Dock="Top" Background="#F5F6F8" CornerRadius="4" Padding="12" Margin="0,0,0,10">
+            <StackPanel>
+                <UniformGrid Columns="4">
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Data inicial" FontSize="12" Foreground="#4C566A"/>
+                        <DatePicker x:Name="FiltroDataIni"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Data final" FontSize="12" Foreground="#4C566A"/>
+                        <DatePicker x:Name="FiltroDataFim"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="CPF do cliente" FontSize="12" Foreground="#4C566A"/>
+                        <TextBox x:Name="FiltroCliente" KeyDown="Filtro_KeyDown"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,10,0">
+                        <TextBlock Text="Produto" FontSize="12" Foreground="#4C566A"/>
+                        <TextBox x:Name="FiltroProduto" KeyDown="Filtro_KeyDown"/>
+                    </StackPanel>
+                </UniformGrid>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button x:Name="BtnFiltrar" Content="Filtrar" Width="110" Height="32" Click="BtnFiltrar_Click"/>
+                    <Button x:Name="BtnLimpar" Content="Limpar filtros" Width="130" Height="32"
+                            Margin="10,0,0,0" Click="BtnLimpar_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border DockPanel.Dock="Top" x:Name="PainelMensagem" Visibility="Collapsed"
+                Margin="0,0,0,8" Padding="10,6" CornerRadius="4" Background="#FDECEA">
+            <TextBlock x:Name="TxtMensagem" Foreground="#C62828" TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- Master-detail -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="1.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" Text="Vendas" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <DataGrid x:Name="GridVendas" AutomationProperties.AutomationId="GridVendas"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                          SelectionMode="Single" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" RowHeaderWidth="0"
+                          SelectionChanged="GridVendas_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nº" Binding="{Binding Id}" Width="Auto"/>
+                        <DataGridTextColumn Header="Data" Binding="{Binding DataTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteTexto}" Width="*"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding TotalTexto}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" x:Name="TxtDetalheCabecalho"
+                           Text="Itens da venda" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <DataGrid x:Name="GridItens" AutomationProperties.AutomationId="GridItensVenda"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*"/>
+                        <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="Auto"/>
+                        <DataGridTextColumn Header="Preço" Binding="{Binding PrecoTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

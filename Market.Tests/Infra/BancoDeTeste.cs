@@ -68,6 +68,32 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
         return cliente;
     }
 
+    /// <summary>Insere uma venda com data explícita e itens (para montar histórico nos testes).</summary>
+    public Venda CriarVenda(DateTime data, string? clienteCpf, params (int MercadoriaId, int Qtd, int Preco)[] itens)
+    {
+        using var context = CreateDbContext();
+        var venda = new Venda
+        {
+            DataVenda = data,
+            ClienteCpf = clienteCpf,
+            ValorTotal = itens.Sum(i => i.Qtd * i.Preco)
+        };
+        context.Vendas.Add(venda);
+        context.SaveChanges();
+
+        foreach (var item in itens)
+            context.ItensVenda.Add(new ItemVenda
+            {
+                VendaId = venda.Id,
+                MercadoriaId = item.MercadoriaId,
+                Quantidade = item.Qtd,
+                PrecoUnitario = item.Preco,
+                PrecoCusto = 0
+            });
+        context.SaveChanges();
+        return venda;
+    }
+
     public int EstoqueAtual(int mercadoriaId)
     {
         using var context = CreateDbContext();
