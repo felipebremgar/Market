@@ -91,9 +91,12 @@ public partial class App : System.Windows.Application
         // Repositórios são stateless (só guardam o factory) — singleton é seguro.
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
         services.AddSingleton<IMercadoriaRepository, MercadoriaRepository>();
+        services.AddSingleton<IClienteRepository, ClienteRepository>();
 
         // Serviços de aplicação.
         services.AddTransient<Application.Services.MercadoriaService>();
+        services.AddTransient<Application.Services.ClienteService>();
+        services.AddTransient<Application.Services.VendaService>();
 
         services.AddSingleton<DatabaseInitializer>();
         services.AddSingleton<DataSeeder>();
@@ -105,6 +108,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<CadastroMercadoriaView>();
         services.AddTransient<ManterMercadoriasView>();
         services.AddTransient<EditarMercadoriaWindow>();
+        services.AddTransient<ClientesView>();
+        services.AddTransient<CadastrarClienteWindow>();
 
         return services.BuildServiceProvider();
     }

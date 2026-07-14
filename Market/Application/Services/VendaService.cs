@@ -1,0 +1,100 @@
+using Market.Domain;
+using Market.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace Market.Application.Services;
+
+/// <summary>
+/// Finalização de venda: operação atômica que baixa estoque, congela preços/custos
+/// e calcula o total. Toda a operação corre em UM contexto e UMA transação — qualquer
+/// falha faz rollback completo (nada persiste).
+/// </summary>
+public class VendaService
+{
+    private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly ILogger<VendaService> _logger;
+
+    public VendaService(IDbContextFactory<AppDbContext> contextFactory, ILogger<VendaService> logger)
+    {
+        _contextFactory = contextFactory;
+        _logger = logger;
+    }
+
+    public async Task<ResultadoOperacao> FinalizarVendaAsync(
+        string? clienteCpf, IReadOnlyList<ItemCarrinho> itens,
+        CancellationToken cancellationToken = default)
+    {
+        if (itens is null || itens.Count == 0)
+            return ResultadoOperacao.Falha("O carrinho está vazio.");
+        if (itens.Any(i => i.Quantidade <= 0))
+            return ResultadoOperacao.Falha("Todas as quantidades devem ser maiores que zero.");
+
+        var cpf = string.IsNullOrWhiteSpace(clienteCpf) ? null : Cpf.Normalizar(clienteCpf);
+
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            if (cpf is not null &&
+                !await context.Clientes.AnyAsync(c => c.Cpf == cpf, cancellationToken))
+                return ResultadoOperacao.Falha("Cliente não encontrado.");
+
+            var venda = new Venda { DataVenda = DateTime.Now, ClienteCpf = cpf, ValorTotal = 0 };
+            context.Vendas.Add(venda);
+            await context.SaveChangesAsync(cancellationToken); // gera o Id da venda
+
+            var totalCentavos = 0;
+            foreach (var item in itens)
+            {
+                // Mesmo contexto: se o produto se repetir no carrinho, a 2ª linha já enxerga
+                // o estoque decrementado pela 1ª (baixa cumulativa).
+                var mercadoria = await context.Mercadorias
+                    .FirstOrDefaultAsync(m => m.Id == item.MercadoriaId, cancellationToken);
+
+                if (mercadoria is null || !mercadoria.Ativo)
+                    return await Cancelar(transaction,
+                        $"Mercadoria (id {item.MercadoriaId}) não encontrada.", cancellationToken);
+
+                if (mercadoria.Quantidade < item.Quantidade)
+                    return await Cancelar(transaction,
+                        $"Estoque insuficiente para '{mercadoria.Nome}'. Disponível: {mercadoria.Quantidade}.",
+                        cancellationToken);
+
+                mercadoria.Quantidade -= item.Quantidade; // baixa no estoque
+
+                context.ItensVenda.Add(new ItemVenda
+                {
+                    VendaId = venda.Id,
+                    MercadoriaId = mercadoria.Id,
+                    Quantidade = item.Quantidade,
+                    PrecoUnitario = mercadoria.PrecoVenda, // congela preço
+                    PrecoCusto = mercadoria.PrecoCusto     // congela custo
+                });
+                totalCentavos += item.Quantidade * mercadoria.PrecoVenda;
+            }
+
+            venda.ValorTotal = totalCentavos;
+            await context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+
+            _logger.LogInformation("Venda {Id} finalizada: {Total} centavos, {Itens} item(ns).",
+                venda.Id, totalCentavos, itens.Count);
+            return ResultadoOperacao.Ok(venda.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao finalizar venda; efetuando rollback.");
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
+    private static async Task<ResultadoOperacao> Cancelar(
+        Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction,
+        string mensagem, CancellationToken cancellationToken)
+    {
+        await transaction.RollbackAsync(cancellationToken);
+        return ResultadoOperacao.Falha(mensagem);
+    }
+}
