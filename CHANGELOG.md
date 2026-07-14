@@ -4,6 +4,19 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.2.0] — Tela inicial limpa e status do banco
+
+### Adicionado
+- Pastilha de status do banco no rodapé do menu lateral (verde "Banco conectado" /
+  vermelho "Banco indisponível"), ao lado da versão.
+- Exibição da versão real do app no menu (`AppInfo`, lida do assembly).
+- `DatabaseInitializer.VerificarConexao()` — checagem de acessibilidade do banco.
+
+### Alterado
+- Tela inicial deixa de exibir o caminho do banco e o dump de tabelas/produtos;
+  passa a mostrar apenas boas-vindas e a manutenção (backup).
+- Versão do app para 1.2.0.
+
 ## [1.1.0] — Fundação: versionamento e migrações
 
 ### Adicionado

@@ -52,6 +52,28 @@ public class DatabaseInitializer
         _logger.LogInformation("Banco de dados pronto em {Path}", DatabasePath);
     }
 
+    /// <summary>
+    /// Verifica se o banco está acessível (abre a conexão e executa uma consulta trivial).
+    /// Usado pela UI para exibir o indicador de status. Nunca lança — retorna false em falha.
+    /// </summary>
+    public bool VerificarConexao()
+    {
+        try
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT 1;";
+            command.ExecuteScalar();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao verificar conexão com o banco.");
+            return false;
+        }
+    }
+
     public IReadOnlyList<string> GetTableNames()
     {
         using var connection = new SqliteConnection(_connectionString);

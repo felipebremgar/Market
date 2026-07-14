@@ -60,9 +60,18 @@
                             Content="📊  Relatório de Lucros" Click="BtnRelatorio_Click"/>
                 </StackPanel>
 
-                <TextBlock DockPanel.Dock="Bottom" Text="v1 — em desenvolvimento"
-                           Foreground="#4C566A" FontSize="11" Margin="16,0,16,12"
-                           VerticalAlignment="Bottom"/>
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,0,16,12" VerticalAlignment="Bottom">
+                    <Border x:Name="StatusBanco" CornerRadius="10" Background="#2E7D32"
+                            Padding="10,4" HorizontalAlignment="Left" Margin="0,0,0,6">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Fill="#A5D6A7" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="StatusBancoText" Text="Banco conectado"
+                                       Foreground="White" FontSize="12" Margin="6,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock x:Name="VersaoText" Text="v1.2.0"
+                               Foreground="#4C566A" FontSize="11"/>
+                </StackPanel>
             </DockPanel>
         </Border>
 

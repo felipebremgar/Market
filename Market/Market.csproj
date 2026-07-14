@@ -8,9 +8,9 @@
     <UseWPF>true</UseWPF>
 
     <!-- Versionamento do sistema. Cada melhoria incrementa o minor (v1.1 → v1.10 → v2.0). -->
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
 
     <!-- Ícone do executável: "M bloco" (bloco escuro + M verde). -->
     <ApplicationIcon>Assets\market.ico</ApplicationIcon>

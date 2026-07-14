@@ -7,12 +7,8 @@
     <StackPanel Margin="24">
         <TextBlock Text="Mercadinho — Sistema de Logística"
                    FontSize="22" FontWeight="Bold"/>
-        <TextBlock Text="Início"
+        <TextBlock Text="Bem-vindo! Use o menu à esquerda para navegar."
                    FontSize="14" Foreground="Gray" Margin="0,4,0,16"/>
-
-        <TextBlock x:Name="StatusText" FontSize="14" TextWrapping="Wrap"/>
-        <TextBlock x:Name="TablesText" FontFamily="Consolas" FontSize="13"
-                   Margin="0,8,0,0" TextWrapping="Wrap"/>
 
         <Separator Margin="0,20"/>
         <TextBlock Text="Manutenção" FontWeight="SemiBold"/>
