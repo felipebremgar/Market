@@ -1,0 +1,105 @@
+<UserControl x:Class="Market.UI.Views.RelatorioLucroView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="600">
+    <UserControl.Resources>
+        <Style TargetType="Border" x:Key="Cartao">
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Relatório de Lucros" FontSize="22" FontWeight="Bold"/>
+
+        <!-- Período -->
+        <Border DockPanel.Dock="Top" Background="#F5F6F8" CornerRadius="4" Padding="12" Margin="0,10,0,10">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="Data inicial" FontSize="12" Foreground="#4C566A"/>
+                    <DatePicker x:Name="DataIni" Width="150"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="Data final" FontSize="12" Foreground="#4C566A"/>
+                    <DatePicker x:Name="DataFim" Width="150"/>
+                </StackPanel>
+                <Button x:Name="BtnGerar" Content="Gerar relatório" Width="140" Height="32"
+                        VerticalAlignment="Bottom" Click="BtnGerar_Click"/>
+                <Button x:Name="BtnLimpar" Content="Limpar" Width="90" Height="32"
+                        Margin="10,0,0,0" VerticalAlignment="Bottom" Click="BtnLimpar_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Cartões de resumo -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource Cartao}" Background="#E3F2FD">
+                <StackPanel>
+                    <TextBlock Text="RECEITA" Foreground="#1565C0" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtReceita" AutomationProperties.AutomationId="TxtReceita"
+                               Text="R$ 0,00" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Style="{StaticResource Cartao}" Background="#FFF3E0">
+                <StackPanel>
+                    <TextBlock Text="CUSTO" Foreground="#E65100" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtCusto" AutomationProperties.AutomationId="TxtCusto"
+                               Text="R$ 0,00" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="2" Style="{StaticResource Cartao}" Background="#E8F5E9" Margin="0">
+                <StackPanel>
+                    <TextBlock Text="LUCRO" Foreground="#2E7D32" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtLucro" AutomationProperties.AutomationId="TxtLucro"
+                               Text="R$ 0,00" FontSize="24" FontWeight="Bold"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Detalhamentos -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0">
+                <TextBlock DockPanel.Dock="Top" Text="Por produto (maior lucro primeiro)"
+                           FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <DataGrid x:Name="GridProduto" AutomationProperties.AutomationId="GridProduto"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*"/>
+                        <DataGridTextColumn Header="Qtd" Binding="{Binding QtdVendida}" Width="Auto"/>
+                        <DataGridTextColumn Header="Receita" Binding="{Binding ReceitaTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Custo" Binding="{Binding CustoTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Lucro" Binding="{Binding LucroTexto}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" Text="Por dia" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <DataGrid x:Name="GridDia" AutomationProperties.AutomationId="GridDia"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                          HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Dia" Binding="{Binding DiaTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Receita" Binding="{Binding ReceitaTexto}" Width="*"/>
+                        <DataGridTextColumn Header="Custo" Binding="{Binding CustoTexto}" Width="*"/>
+                        <DataGridTextColumn Header="Lucro" Binding="{Binding LucroTexto}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

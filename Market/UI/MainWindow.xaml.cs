@@ -35,4 +35,7 @@ public partial class MainWindow : Window
 
     private void BtnHistorico_Click(object sender, RoutedEventArgs e)
         => Navegar<HistoricoVendasView>();
+
+    private void BtnRelatorio_Click(object sender, RoutedEventArgs e)
+        => Navegar<RelatorioLucroView>();
 }

@@ -13,4 +13,9 @@ public static class Moeda
     public static string ParaTexto(int centavos) => (centavos / 100m).ToString("C");
 
     public static decimal ParaReais(int centavos) => centavos / 100m;
+
+    // Overloads para totais agregados (relatórios), que podem exceder int.
+    public static string ParaTexto(long centavos) => (centavos / 100m).ToString("C");
+
+    public static decimal ParaReais(long centavos) => centavos / 100m;
 }

@@ -56,7 +56,8 @@
                             Content="🛒  Vendas (PDV)" Click="BtnPdv_Click"/>
                     <Button x:Name="BtnHistorico" Style="{StaticResource NavButton}"
                             Content="📜  Histórico de Vendas" Click="BtnHistorico_Click"/>
-                    <Button Style="{StaticResource NavButton}" Content="📊  Relatório de Lucros" IsEnabled="False"/>
+                    <Button x:Name="BtnRelatorio" Style="{StaticResource NavButton}"
+                            Content="📊  Relatório de Lucros" Click="BtnRelatorio_Click"/>
                 </StackPanel>
 
                 <TextBlock DockPanel.Dock="Bottom" Text="v1 — em desenvolvimento"

@@ -94,6 +94,34 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
         return venda;
     }
 
+    /// <summary>Como <see cref="CriarVenda"/>, mas com PrecoCusto congelado por item (para relatórios de lucro).</summary>
+    public Venda CriarVendaComCusto(
+        DateTime data, string? clienteCpf,
+        params (int MercadoriaId, int Qtd, int PrecoVenda, int PrecoCusto)[] itens)
+    {
+        using var context = CreateDbContext();
+        var venda = new Venda
+        {
+            DataVenda = data,
+            ClienteCpf = clienteCpf,
+            ValorTotal = itens.Sum(i => i.Qtd * i.PrecoVenda)
+        };
+        context.Vendas.Add(venda);
+        context.SaveChanges();
+
+        foreach (var item in itens)
+            context.ItensVenda.Add(new ItemVenda
+            {
+                VendaId = venda.Id,
+                MercadoriaId = item.MercadoriaId,
+                Quantidade = item.Qtd,
+                PrecoUnitario = item.PrecoVenda,
+                PrecoCusto = item.PrecoCusto
+            });
+        context.SaveChanges();
+        return venda;
+    }
+
     public int EstoqueAtual(int mercadoriaId)
     {
         using var context = CreateDbContext();

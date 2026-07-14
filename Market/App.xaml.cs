@@ -99,6 +99,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Application.Services.VendaService>();
         services.AddTransient<Application.Services.PdvService>();
         services.AddTransient<Application.Services.HistoricoService>();
+        services.AddTransient<Application.Services.RelatorioService>();
 
         services.AddSingleton<DatabaseInitializer>();
         services.AddSingleton<DataSeeder>();
@@ -115,6 +116,7 @@ public partial class App : System.Windows.Application
         // PDV singleton: preserva o carrinho ao navegar entre telas.
         services.AddSingleton<PdvView>();
         services.AddTransient<HistoricoVendasView>();
+        services.AddTransient<RelatorioLucroView>();
 
         return services.BuildServiceProvider();
     }
