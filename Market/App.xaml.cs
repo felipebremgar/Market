@@ -122,6 +122,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Application.Services.HistoricoService>();
         services.AddTransient<Application.Services.RelatorioService>();
 
+        services.AddSingleton<MigrationRunner>();
         services.AddSingleton<DatabaseInitializer>();
         services.AddSingleton<DataSeeder>();
         services.AddSingleton<BackupService>();

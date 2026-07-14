@@ -12,13 +12,18 @@ namespace Market.Infrastructure.Data;
 public class DatabaseInitializer
 {
     private readonly ILogger<DatabaseInitializer> _logger;
+    private readonly MigrationRunner _migrationRunner;
     private readonly string _connectionString;
 
     public string DatabasePath { get; }
 
-    public DatabaseInitializer(IConfiguration configuration, ILogger<DatabaseInitializer> logger)
+    public DatabaseInitializer(
+        IConfiguration configuration,
+        MigrationRunner migrationRunner,
+        ILogger<DatabaseInitializer> logger)
     {
         _logger = logger;
+        _migrationRunner = migrationRunner;
         _connectionString = SqliteConnectionString.Resolve(configuration);
         DatabasePath = SqliteConnectionString.ResolvePath(configuration);
     }
@@ -39,6 +44,9 @@ public class DatabaseInitializer
 
             _logger.LogInformation("Esquema criado com sucesso.");
         }
+
+        // Traz bancos criados em versões anteriores até a versão de schema atual.
+        _migrationRunner.Aplicar(connection);
 
         SmokeTest(connection);
         _logger.LogInformation("Banco de dados pronto em {Path}", DatabasePath);

@@ -11,7 +11,7 @@ obj/
 *.db-shm
 *.db-wal
 
-# Publish e backups
+# Publish e backups (o executável é distribuído via GitHub Releases)
 publish/
 backups/
 crud-selftest.log

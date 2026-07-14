@@ -59,3 +59,9 @@ CREATE TABLE ItemVenda (
 );
 CREATE INDEX IX_ItemVenda_VendaId      ON ItemVenda (VendaId);
 CREATE INDEX IX_ItemVenda_MercadoriaId ON ItemVenda (MercadoriaId);
+
+-- ---------- Versão do schema ----------
+-- Bancos novos já nascem na versão de schema mais recente; o MigrationRunner só
+-- precisa atuar sobre bancos criados antes de uma migração. Mantenha este valor
+-- igual a SchemaMigrations.VersaoAlvo.
+PRAGMA user_version = 1;

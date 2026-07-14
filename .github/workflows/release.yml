@@ -1,0 +1,37 @@
+name: Release
+
+# Publica uma Release sempre que uma tag no formato vX.Y.Z é enviada.
+# Fluxo de uso: git tag v1.1.0 && git push origin v1.1.0
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write   # necessário para criar a Release
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publicar (self-contained, win-x64)
+        run: dotnet publish Market/Market.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      # O app lê appsettings.json e Infrastructure/Data/schema.sql como arquivos
+      # soltos; por isso empacotamos a pasta inteira do publish, não só o .exe.
+      - name: Compactar pacote
+        run: Compress-Archive -Path publish/* -DestinationPath Market-${{ github.ref_name }}.zip
+
+      - name: Criar Release e anexar o pacote
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Market-${{ github.ref_name }}.zip
+          generate_release_notes: true
