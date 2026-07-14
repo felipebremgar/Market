@@ -30,6 +30,15 @@ public class MercadoriaRepository : Repository<Mercadoria>, IMercadoriaRepositor
             .FirstOrDefaultAsync(m => m.CodigoBarras == codigoBarras && m.Ativo, cancellationToken);
     }
 
+    public async Task<Mercadoria?> ObterPorCodigoBarrasIncluindoInativaAsync(string codigoBarras,
+        CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        return await context.Mercadorias
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.CodigoBarras == codigoBarras, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Mercadoria>> ListarAsync(FiltroMercadoria filtro,
         CancellationToken cancellationToken = default)
     {
@@ -38,10 +47,11 @@ public class MercadoriaRepository : Repository<Mercadoria>, IMercadoriaRepositor
         var query = context.Mercadorias.AsNoTracking().Where(m => m.Ativo);
 
         // WHERE dinâmico: cada critério nulo é ignorado.
+        // LIKE (não Contains/instr) para busca case-insensitive, como o SQL do plano.
         if (!string.IsNullOrWhiteSpace(filtro.Nome))
-            query = query.Where(m => m.Nome.Contains(filtro.Nome));
+            query = query.Where(m => EF.Functions.Like(m.Nome, $"%{filtro.Nome}%"));
         if (!string.IsNullOrWhiteSpace(filtro.Fornecedor))
-            query = query.Where(m => m.Fornecedor != null && m.Fornecedor.Contains(filtro.Fornecedor));
+            query = query.Where(m => m.Fornecedor != null && EF.Functions.Like(m.Fornecedor, $"%{filtro.Fornecedor}%"));
         if (!string.IsNullOrWhiteSpace(filtro.CodigoBarras))
             query = query.Where(m => m.CodigoBarras == filtro.CodigoBarras);
         if (filtro.PrecoMinCentavos is int precoMin)

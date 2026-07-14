@@ -10,3 +10,8 @@ obj/
 *.db
 *.db-shm
 *.db-wal
+
+# Publish e backups
+publish/
+backups/
+crud-selftest.log

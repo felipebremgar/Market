@@ -36,6 +36,8 @@ public partial class App : System.Windows.Application
         Services = ConfigureServices(configuration);
         var logger = Services.GetRequiredService<ILogger<App>>();
 
+        ConfigurarTratamentoGlobalDeExcecoes(logger);
+
         try
         {
             Services.GetRequiredService<DatabaseInitializer>().Initialize();
@@ -72,6 +74,25 @@ public partial class App : System.Windows.Application
         Services.GetRequiredService<MainWindow>().Show();
     }
 
+    /// <summary>
+    /// Captura exceções não tratadas: na thread de UI, loga e avisa sem derrubar o app;
+    /// nas demais threads, ao menos loga antes de encerrar.
+    /// </summary>
+    private void ConfigurarTratamentoGlobalDeExcecoes(ILogger<App> logger)
+    {
+        DispatcherUnhandledException += (_, args) =>
+        {
+            logger.LogError(args.Exception, "Exceção não tratada na interface.");
+            MessageBox.Show(
+                "Ocorreu um erro inesperado. A operação foi cancelada, mas o sistema continua aberto.",
+                "Mercadinho", MessageBoxButton.OK, MessageBoxImage.Warning);
+            args.Handled = true; // mantém o app vivo
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            logger.LogCritical(args.ExceptionObject as Exception, "Exceção fatal não tratada.");
+    }
+
     private static ServiceProvider ConfigureServices(IConfiguration configuration)
     {
         var services = new ServiceCollection();
@@ -103,6 +124,7 @@ public partial class App : System.Windows.Application
 
         services.AddSingleton<DatabaseInitializer>();
         services.AddSingleton<DataSeeder>();
+        services.AddSingleton<BackupService>();
         services.AddTransient<CrudSelfTest>();
 
         // UI: janela principal e views (transient — nova instância a cada navegação).

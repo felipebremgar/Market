@@ -32,13 +32,29 @@ public class MercadoriaService
         CadastroMercadoriaDados dados, CancellationToken cancellationToken = default)
     {
         var erros = ValidarCampos(dados, out var nome, out var codigoBarras);
-
-        if (codigoBarras is not null &&
-            await _repositorio.CodigoBarrasExisteAsync(codigoBarras, null, cancellationToken))
-            erros.Add($"Já existe uma mercadoria com o código de barras {codigoBarras}.");
-
         if (erros.Count > 0)
             return ResultadoOperacao.Falha(erros);
+
+        // Código de barras já usado: se for de uma mercadoria INATIVA, reativa (produto voltou);
+        // se for de uma ATIVA, é duplicado de verdade.
+        if (codigoBarras is not null)
+        {
+            var existente = await _repositorio
+                .ObterPorCodigoBarrasIncluindoInativaAsync(codigoBarras, cancellationToken);
+            if (existente is not null)
+            {
+                if (existente.Ativo)
+                    return ResultadoOperacao.Falha(
+                        $"Já existe uma mercadoria com o código de barras {codigoBarras}.");
+
+                existente.Ativo = true;
+                AplicarDados(existente, dados, nome, codigoBarras);
+                await _repositorio.UpdateAsync(existente, cancellationToken);
+                _logger.LogInformation("Mercadoria reativada pelo código {Codigo} (Id {Id}).",
+                    codigoBarras, existente.Id);
+                return ResultadoOperacao.Ok(existente.Id);
+            }
+        }
 
         var mercadoria = new Mercadoria { Ativo = true };
         AplicarDados(mercadoria, dados, nome, codigoBarras);

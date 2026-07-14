@@ -8,7 +8,8 @@ namespace Market.UI.Views;
 /// </summary>
 public class MercadoriaLinha
 {
-    private static readonly DateOnly Hoje = DateOnly.FromDateTime(DateTime.Today);
+    // Calculada a cada acesso: um app aberto por dias mantém os destaques de validade corretos.
+    private static DateOnly Hoje => DateOnly.FromDateTime(DateTime.Today);
 
     private readonly int _alertaEstoque;
 

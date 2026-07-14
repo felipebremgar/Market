@@ -16,6 +16,10 @@ public interface IMercadoriaRepository : IRepository<Mercadoria>
     Task<Mercadoria?> ObterPorCodigoBarrasAsync(string codigoBarras,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Busca por código de barras incluindo inativas (para reativar no cadastro).</summary>
+    Task<Mercadoria?> ObterPorCodigoBarrasIncluindoInativaAsync(string codigoBarras,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Lista mercadorias ativas aplicando o <paramref name="filtro"/> dinamicamente
     /// (campos nulos são ignorados), ordenadas por Nome.

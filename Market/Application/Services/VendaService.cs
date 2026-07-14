@@ -66,7 +66,7 @@ public class VendaService
             context.Vendas.Add(venda);
             await context.SaveChangesAsync(cancellationToken); // gera o Id da venda
 
-            var totalCentavos = 0;
+            long totalCentavos = 0; // long: evita overflow silencioso na soma
             foreach (var item in itens)
             {
                 // Mesmo contexto: se o produto se repetir no carrinho, a 2ª linha já enxerga
@@ -93,10 +93,14 @@ public class VendaService
                     PrecoUnitario = mercadoria.PrecoVenda, // congela preço
                     PrecoCusto = mercadoria.PrecoCusto     // congela custo
                 });
-                totalCentavos += item.Quantidade * mercadoria.PrecoVenda;
+                totalCentavos += (long)item.Quantidade * mercadoria.PrecoVenda;
             }
 
-            venda.ValorTotal = totalCentavos;
+            if (totalCentavos > int.MaxValue)
+                return await Cancelar(transaction,
+                    "O valor total da venda excede o limite suportado.", cancellationToken);
+
+            venda.ValorTotal = (int)totalCentavos;
             await context.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
