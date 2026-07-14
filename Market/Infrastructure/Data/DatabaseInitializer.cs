@@ -19,19 +19,8 @@ public class DatabaseInitializer
     public DatabaseInitializer(IConfiguration configuration, ILogger<DatabaseInitializer> logger)
     {
         _logger = logger;
-
-        var connectionString = configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException(
-                "Connection string 'Default' não encontrada no appsettings.json.");
-
-        // Caminho relativo do .db é resolvido contra a pasta do executável,
-        // independente do diretório de trabalho em que o app foi aberto.
-        var builder = new SqliteConnectionStringBuilder(connectionString);
-        if (!Path.IsPathRooted(builder.DataSource))
-            builder.DataSource = Path.Combine(AppContext.BaseDirectory, builder.DataSource);
-
-        DatabasePath = builder.DataSource;
-        _connectionString = builder.ToString();
+        _connectionString = SqliteConnectionString.Resolve(configuration);
+        DatabasePath = SqliteConnectionString.ResolvePath(configuration);
     }
 
     public void Initialize()

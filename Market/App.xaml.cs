@@ -1,6 +1,10 @@
+using System.Globalization;
 using System.Windows;
+using Market.Domain.Repositories;
 using Market.Infrastructure.Data;
+using Market.Infrastructure.Data.Repositories;
 using Market.UI;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +19,14 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        // Cultura fixa pt-BR: garante "R$ 9,90" na exibição e vírgula decimal na entrada,
+        // independentemente das configurações regionais da máquina.
+        var ptBr = new CultureInfo("pt-BR");
+        CultureInfo.DefaultThreadCurrentCulture = ptBr;
+        CultureInfo.DefaultThreadCurrentUICulture = ptBr;
+        Thread.CurrentThread.CurrentCulture = ptBr;
+        Thread.CurrentThread.CurrentUICulture = ptBr;
+
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -26,6 +38,7 @@ public partial class App : System.Windows.Application
         try
         {
             Services.GetRequiredService<DatabaseInitializer>().Initialize();
+            Services.GetRequiredService<DataSeeder>().Seed();
         }
         catch (Exception ex)
         {
@@ -37,10 +50,21 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Modo utilitário (Market.exe --initdb): cria/valida o banco e sai sem abrir a UI.
+        // Modo utilitário: cria/valida o banco e semeia, sem abrir a UI.
         if (e.Args.Contains("--initdb"))
         {
             Shutdown(0);
+            return;
+        }
+
+        // Modo diagnóstico: roda o self-test de CRUD, grava o relatório em arquivo e sai.
+        if (e.Args.Contains("--test-crud"))
+        {
+            var report = Services.GetRequiredService<CrudSelfTest>().RunAsync().GetAwaiter().GetResult();
+            var reportPath = System.IO.Path.Combine(AppContext.BaseDirectory, "crud-selftest.log");
+            System.IO.File.WriteAllText(reportPath, report);
+            logger.LogInformation("Relatório do self-test gravado em {Path}", reportPath);
+            Shutdown(report.Contains("PASSOU") ? 0 : 1);
             return;
         }
 
@@ -58,7 +82,17 @@ public partial class App : System.Windows.Application
             logging.AddDebug();
         });
 
+        // Factory de DbContext: cada operação obtém um contexto novo e de vida curta.
+        services.AddDbContextFactory<AppDbContext>((sp, options) =>
+            options.UseSqlite(SqliteConnectionString.Resolve(
+                sp.GetRequiredService<IConfiguration>())));
+
+        // Repositórios são stateless (só guardam o factory) — singleton é seguro.
+        services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+
         services.AddSingleton<DatabaseInitializer>();
+        services.AddSingleton<DataSeeder>();
+        services.AddTransient<CrudSelfTest>();
         services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
