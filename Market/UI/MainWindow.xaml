@@ -5,16 +5,62 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Mercadinho — Sistema de Logística"
-        Height="450" Width="800"
+        Height="560" Width="900"
         WindowStartupLocation="CenterScreen">
-    <StackPanel Margin="24">
-        <TextBlock Text="Mercadinho — Sistema de Logística"
-                   FontSize="22" FontWeight="Bold"/>
-        <TextBlock Text="Dia 1 — Fundação do projeto e criação do banco"
-                   FontSize="14" Foreground="Gray" Margin="0,4,0,16"/>
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="NavButton">
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Margin" Value="8,2"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#ECEFF4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3B4252"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#6B7280"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-        <TextBlock x:Name="StatusText" FontSize="14" TextWrapping="Wrap"/>
-        <TextBlock x:Name="TablesText" FontFamily="Consolas" FontSize="13"
-                   Margin="0,8,0,0" TextWrapping="Wrap"/>
-    </StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Menu lateral -->
+        <Border Grid.Column="0" Background="#2E3440">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Text="MERCADINHO"
+                           Foreground="#88C0D0" FontWeight="Bold" FontSize="16"
+                           Margin="16,20,16,20"/>
+
+                <StackPanel DockPanel.Dock="Top">
+                    <Button x:Name="BtnInicio" Style="{StaticResource NavButton}"
+                            Content="🏠  Início" Click="BtnInicio_Click"/>
+                    <Button x:Name="BtnCadastroMercadoria" Style="{StaticResource NavButton}"
+                            Content="➕  Cadastro de Mercadoria" Click="BtnCadastroMercadoria_Click"/>
+                    <Button Style="{StaticResource NavButton}" Content="📦  Manter Mercadorias" IsEnabled="False"/>
+                    <Button Style="{StaticResource NavButton}" Content="🛒  Vendas (PDV)" IsEnabled="False"/>
+                    <Button Style="{StaticResource NavButton}" Content="📜  Histórico de Vendas" IsEnabled="False"/>
+                    <Button Style="{StaticResource NavButton}" Content="📊  Relatório de Lucros" IsEnabled="False"/>
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="v1 — em desenvolvimento"
+                           Foreground="#4C566A" FontSize="11" Margin="16,0,16,12"
+                           VerticalAlignment="Bottom"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Conteúdo -->
+        <ContentControl x:Name="ContentArea" Grid.Column="1"/>
+    </Grid>
 </Window>

@@ -1,44 +1,26 @@
-using System.Text;
 using System.Windows;
-using Market.Domain;
-using Market.Domain.Repositories;
-using Market.Infrastructure.Data;
+using System.Windows.Controls;
+using Market.UI.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Market.UI;
 
 public partial class MainWindow : Window
 {
-    private readonly DatabaseInitializer _databaseInitializer;
-    private readonly IRepository<Cliente> _clientes;
-    private readonly IRepository<Mercadoria> _mercadorias;
+    private readonly IServiceProvider _services;
 
-    public MainWindow(
-        DatabaseInitializer databaseInitializer,
-        IRepository<Cliente> clientes,
-        IRepository<Mercadoria> mercadorias)
+    public MainWindow(IServiceProvider services)
     {
         InitializeComponent();
-        _databaseInitializer = databaseInitializer;
-        _clientes = clientes;
-        _mercadorias = mercadorias;
-        Loaded += OnLoaded;
+        _services = services;
+        Navegar<HomeView>();
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
-    {
-        var tabelas = _databaseInitializer.GetTableNames();
-        StatusText.Text = $"✔ Banco conectado: {_databaseInitializer.DatabasePath}";
+    private void Navegar<TView>() where TView : UserControl
+        => ContentArea.Content = _services.GetRequiredService<TView>();
 
-        var clientes = await _clientes.GetAllAsync();
-        var mercadorias = await _mercadorias.GetAllAsync();
+    private void BtnInicio_Click(object sender, RoutedEventArgs e) => Navegar<HomeView>();
 
-        var texto = new StringBuilder();
-        texto.AppendLine($"Tabelas ({tabelas.Count}): {string.Join(", ", tabelas)}");
-        texto.AppendLine($"Clientes: {clientes.Count}  |  Mercadorias: {mercadorias.Count}");
-        texto.AppendLine();
-        foreach (var m in mercadorias)
-            texto.AppendLine($"  • {m.Nome} — {Moeda.ParaTexto(m.PrecoVenda)} (estoque {m.Quantidade})");
-
-        TablesText.Text = texto.ToString();
-    }
+    private void BtnCadastroMercadoria_Click(object sender, RoutedEventArgs e)
+        => Navegar<CadastroMercadoriaView>();
 }

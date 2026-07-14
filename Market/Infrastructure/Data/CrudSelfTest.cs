@@ -1,4 +1,5 @@
 using System.Text;
+using Market.Application.Services;
 using Market.Domain;
 using Market.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,7 @@ public class CrudSelfTest
     private readonly IRepository<Cliente> _clientes;
     private readonly IRepository<Mercadoria> _mercadorias;
     private readonly IRepository<Venda> _vendas;
+    private readonly MercadoriaService _mercadoriaService;
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly ILogger<CrudSelfTest> _logger;
 
@@ -25,12 +27,14 @@ public class CrudSelfTest
         IRepository<Cliente> clientes,
         IRepository<Mercadoria> mercadorias,
         IRepository<Venda> vendas,
+        MercadoriaService mercadoriaService,
         IDbContextFactory<AppDbContext> contextFactory,
         ILogger<CrudSelfTest> logger)
     {
         _clientes = clientes;
         _mercadorias = mercadorias;
         _vendas = vendas;
+        _mercadoriaService = mercadoriaService;
         _contextFactory = contextFactory;
         _logger = logger;
     }
@@ -144,6 +148,50 @@ public class CrudSelfTest
             var itensRestantes = await context.ItensVenda.CountAsync(i => i.VendaId == venda.Id);
             Check("Excluir venda apaga os itens (CASCADE)", itensRestantes == 0);
         }
+
+        // ---- MercadoriaService (Dia 3): validação, centavos e código único ----
+        var cadastroOk = await _mercadoriaService.CadastrarAsync(new CadastroMercadoriaDados
+        {
+            Nome = "Macarrão 500g", Fornecedor = "Fornecedor C",
+            PrecoCustoReais = 3.50m, PrecoVendaReais = 5.90m, Quantidade = 40,
+            CodigoBarras = "7890000000123", Validade = new DateOnly(2027, 1, 31)
+        });
+        Check("Service: cadastro válido retorna sucesso", cadastroOk.Sucesso);
+
+        Mercadoria? cadastrada = cadastroOk.IdGerado is int id ? await _mercadorias.GetByIdAsync(id) : null;
+        Check("Service: preço em reais convertido para centavos (5,90 -> 590)",
+            cadastrada?.PrecoVenda == 590 && cadastrada?.PrecoCusto == 350);
+        Check("Service: validade persistida (DateOnly)",
+            cadastrada?.Validade == new DateOnly(2027, 1, 31));
+
+        var nomeVazio = await _mercadoriaService.CadastrarAsync(new CadastroMercadoriaDados
+        {
+            Nome = "   ", PrecoVendaReais = 1m, Quantidade = 1
+        });
+        Check("Service: nome vazio rejeitado", !nomeVazio.Sucesso && nomeVazio.Erros.Any(e => e.Contains("nome", StringComparison.OrdinalIgnoreCase)));
+
+        var precoNegativo = await _mercadoriaService.CadastrarAsync(new CadastroMercadoriaDados
+        {
+            Nome = "Item Inválido", PrecoVendaReais = -1m, Quantidade = 1
+        });
+        Check("Service: preço negativo rejeitado", !precoNegativo.Sucesso);
+
+        var qtdNegativa = await _mercadoriaService.CadastrarAsync(new CadastroMercadoriaDados
+        {
+            Nome = "Item Inválido", PrecoVendaReais = 1m, Quantidade = -5
+        });
+        Check("Service: quantidade negativa rejeitada", !qtdNegativa.Sucesso);
+
+        var codigoDuplicado = await _mercadoriaService.CadastrarAsync(new CadastroMercadoriaDados
+        {
+            Nome = "Cópia do Arroz", PrecoVendaReais = 10m, Quantidade = 1,
+            CodigoBarras = "7891234567890" // já existe no seed
+        });
+        Check("Service: código de barras duplicado rejeitado",
+            !codigoDuplicado.Sucesso && codigoDuplicado.Erros.Any(e => e.Contains("código de barras")));
+
+        // Limpa a mercadoria cadastrada pelo teste.
+        if (cadastrada is not null) await _mercadorias.DeleteAsync(cadastrada);
 
         var resultado = ok ? "PASSOU" : "FALHOU";
         report.Insert(0, $"CRUD self-test: {resultado}{Environment.NewLine}");

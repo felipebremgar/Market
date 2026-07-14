@@ -4,6 +4,7 @@ using Market.Domain.Repositories;
 using Market.Infrastructure.Data;
 using Market.Infrastructure.Data.Repositories;
 using Market.UI;
+using Market.UI.Views;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -89,11 +90,19 @@ public partial class App : System.Windows.Application
 
         // Repositórios são stateless (só guardam o factory) — singleton é seguro.
         services.AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+        services.AddSingleton<IMercadoriaRepository, MercadoriaRepository>();
+
+        // Serviços de aplicação.
+        services.AddTransient<Application.Services.MercadoriaService>();
 
         services.AddSingleton<DatabaseInitializer>();
         services.AddSingleton<DataSeeder>();
         services.AddTransient<CrudSelfTest>();
+
+        // UI: janela principal e views (transient — nova instância a cada navegação).
         services.AddTransient<MainWindow>();
+        services.AddTransient<HomeView>();
+        services.AddTransient<CadastroMercadoriaView>();
 
         return services.BuildServiceProvider();
     }
