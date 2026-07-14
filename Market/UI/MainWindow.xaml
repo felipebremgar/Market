@@ -52,7 +52,8 @@
                             Content="📦  Manter Mercadorias" Click="BtnManterMercadorias_Click"/>
                     <Button x:Name="BtnClientes" Style="{StaticResource NavButton}"
                             Content="👥  Clientes" Click="BtnClientes_Click"/>
-                    <Button Style="{StaticResource NavButton}" Content="🛒  Vendas (PDV)" IsEnabled="False"/>
+                    <Button x:Name="BtnPdv" Style="{StaticResource NavButton}"
+                            Content="🛒  Vendas (PDV)" Click="BtnPdv_Click"/>
                     <Button Style="{StaticResource NavButton}" Content="📜  Histórico de Vendas" IsEnabled="False"/>
                     <Button Style="{StaticResource NavButton}" Content="📊  Relatório de Lucros" IsEnabled="False"/>
                 </StackPanel>

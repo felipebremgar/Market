@@ -29,4 +29,7 @@ public partial class MainWindow : Window
 
     private void BtnClientes_Click(object sender, RoutedEventArgs e)
         => Navegar<ClientesView>();
+
+    private void BtnPdv_Click(object sender, RoutedEventArgs e)
+        => Navegar<PdvView>();
 }

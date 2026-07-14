@@ -1,0 +1,109 @@
+<UserControl x:Class="Market.UI.Views.PdvView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="560">
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="280"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Vendas (PDV)"
+                   FontSize="22" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <!-- Entrada -->
+        <Border Grid.Row="1" Grid.Column="0" Background="#F5F6F8" CornerRadius="4"
+                Padding="12" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="Código de barras (bipe o produto)" FontSize="12" Foreground="#4C566A"/>
+                    <TextBox x:Name="TxtCodigo" Height="32" VerticalContentAlignment="Center"
+                             KeyDown="TxtCodigo_KeyDown"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="Buscar por nome" FontSize="12" Foreground="#4C566A"/>
+                    <TextBox x:Name="TxtBuscaNome" Height="32" VerticalContentAlignment="Center"
+                             KeyDown="TxtBuscaNome_KeyDown"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Resultados da busca por nome (sobrepõe quando há resultados) -->
+        <ListBox Grid.Row="2" Grid.Column="0" x:Name="ListaBusca" Visibility="Collapsed"
+                 AutomationProperties.AutomationId="ListaBusca"
+                 MouseDoubleClick="ListaBusca_Escolher" KeyDown="ListaBusca_KeyDown"
+                 VerticalAlignment="Top" MaxHeight="180" Margin="0,0,0,10"/>
+
+        <!-- Carrinho -->
+        <DataGrid Grid.Row="2" Grid.Column="0" x:Name="GridCarrinho"
+                  AutomationProperties.AutomationId="GridCarrinho"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0"
+                  SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*"/>
+                <DataGridTextColumn Header="Preço" Binding="{Binding PrecoUnitarioTexto}" Width="Auto"/>
+                <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="Auto"/>
+                <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto"/>
+                <DataGridTemplateColumn Header="" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="−" Width="28" Margin="2,0" Click="BtnMenos_Click"/>
+                                <Button Content="+" Width="28" Margin="2,0" Click="BtnMais_Click"/>
+                                <Button Content="Remover" Margin="6,0,2,0" Click="BtnRemover_Click"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Resumo -->
+        <Border Grid.Row="1" Grid.Column="2" Grid.RowSpan="2" Background="#2E3440"
+                CornerRadius="6" Padding="16">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="TOTAL" Foreground="#88C0D0" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtTotal" AutomationProperties.AutomationId="TxtTotal"
+                               Text="R$ 0,00" Foreground="White" FontSize="34" FontWeight="Bold"/>
+
+                    <Separator Margin="0,14" Background="#4C566A"/>
+
+                    <TextBlock Text="Cliente" Foreground="#88C0D0" FontWeight="Bold"/>
+                    <TextBox x:Name="TxtCliente" Height="30" Margin="0,4,0,0"
+                             VerticalContentAlignment="Center" KeyDown="TxtCliente_KeyDown"/>
+                    <TextBlock x:Name="TxtClienteSelecionado"
+                               AutomationProperties.AutomationId="TxtClienteSelecionado"
+                               Foreground="#A3BE8C" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                    <Button x:Name="BtnRemoverCliente" Content="✕ remover cliente" Margin="0,4,0,0"
+                            HorizontalAlignment="Left" Visibility="Collapsed" Click="BtnRemoverCliente_Click"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom">
+                    <Border x:Name="PainelMensagem" Visibility="Collapsed" Margin="0,0,0,8"
+                            Padding="8,6" CornerRadius="4" Background="#BF616A">
+                        <TextBlock x:Name="TxtMensagem" Foreground="White" TextWrapping="Wrap"/>
+                    </Border>
+                    <Button x:Name="BtnFinalizar" Content="Finalizar venda" Height="44"
+                            IsEnabled="False" ToolTip="Disponível no Dia 7"/>
+                    <Button x:Name="BtnCancelar" Content="Cancelar venda" Height="32" Margin="0,8,0,0"
+                            Click="BtnCancelar_Click"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</UserControl>
