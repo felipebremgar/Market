@@ -12,12 +12,13 @@ public partial class PdvView : UserControl
 {
     private readonly PdvService _pdv;
     private readonly ClienteService _clientes;
+    private readonly VendaService _vendas;
     private readonly IServiceProvider _services;
     private readonly ILogger<PdvView> _logger;
 
     private readonly Carrinho _carrinho = new();
 
-    /// <summary>CPF do cliente selecionado (para o Finalizar do Dia 7). Nulo = venda sem cliente.</summary>
+    /// <summary>CPF do cliente selecionado. Nulo = venda sem cliente.</summary>
     public string? ClienteCpfSelecionado { get; private set; }
 
     private sealed record ResultadoBusca(Mercadoria Mercadoria)
@@ -26,15 +27,65 @@ public partial class PdvView : UserControl
     }
 
     public PdvView(
-        PdvService pdv, ClienteService clientes,
+        PdvService pdv, ClienteService clientes, VendaService vendas,
         IServiceProvider services, ILogger<PdvView> logger)
     {
         InitializeComponent();
         _pdv = pdv;
         _clientes = clientes;
+        _vendas = vendas;
         _services = services;
         _logger = logger;
         Loaded += (_, _) => { AtualizarCarrinho(); TxtCodigo.Focus(); };
+    }
+
+    // ----- Finalizar -----
+
+    private async void BtnFinalizar_Click(object sender, RoutedEventArgs e)
+    {
+        if (_carrinho.Vazio) return;
+
+        BtnFinalizar.IsEnabled = false;
+        try
+        {
+            var resultado = await _vendas.FinalizarVendaAsync(
+                ClienteCpfSelecionado, _carrinho.ParaItensCarrinho());
+
+            if (!resultado.Sucesso)
+            {
+                // Ex.: estoque mudou entre o bipe e o finalizar — mensagem clara, carrinho preservado.
+                MostrarErro(resultado.MensagemErro);
+                return;
+            }
+
+            var recibo = await _vendas.ObterReciboAsync(resultado.IdGerado!.Value);
+            if (recibo is not null)
+            {
+                var janela = new ReciboWindow(recibo) { Owner = Window.GetWindow(this) };
+                janela.ShowDialog();
+            }
+
+            IniciarNovaVenda();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro inesperado ao finalizar a venda.");
+            MostrarErro("Ocorreu um erro inesperado ao finalizar a venda. Tente novamente.");
+        }
+        finally
+        {
+            AtualizarCarrinho(); // reavalia o estado do botão
+        }
+    }
+
+    private void IniciarNovaVenda()
+    {
+        _carrinho.Limpar();
+        RemoverClienteSelecionado();
+        LimparMensagem();
+        ListaBusca.Visibility = Visibility.Collapsed;
+        AtualizarCarrinho();
+        TxtCodigo.Focus();
     }
 
     // ----- Adicionar itens -----
@@ -218,6 +269,7 @@ public partial class PdvView : UserControl
     {
         GridCarrinho.ItemsSource = _carrinho.Linhas.ToList();
         TxtTotal.Text = _carrinho.TotalTexto;
+        BtnFinalizar.IsEnabled = !_carrinho.Vazio;
     }
 
     private void MostrarErro(string mensagem)

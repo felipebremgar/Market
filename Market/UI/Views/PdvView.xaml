@@ -99,7 +99,7 @@
                         <TextBlock x:Name="TxtMensagem" Foreground="White" TextWrapping="Wrap"/>
                     </Border>
                     <Button x:Name="BtnFinalizar" Content="Finalizar venda" Height="44"
-                            IsEnabled="False" ToolTip="Disponível no Dia 7"/>
+                            IsEnabled="False" Click="BtnFinalizar_Click"/>
                     <Button x:Name="BtnCancelar" Content="Cancelar venda" Height="32" Margin="0,8,0,0"
                             Click="BtnCancelar_Click"/>
                 </StackPanel>

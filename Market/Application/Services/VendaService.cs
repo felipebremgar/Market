@@ -21,6 +21,28 @@ public class VendaService
         _logger = logger;
     }
 
+    /// <summary>Monta o recibo de uma venda persistida (itens, total, cliente). Null se não existir.</summary>
+    public async Task<ReciboVenda?> ObterReciboAsync(int vendaId, CancellationToken cancellationToken = default)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+
+        var venda = await context.Vendas
+            .AsNoTracking()
+            .Include(v => v.Cliente)
+            .Include(v => v.Itens).ThenInclude(i => i.Mercadoria)
+            .FirstOrDefaultAsync(v => v.Id == vendaId, cancellationToken);
+
+        if (venda is null)
+            return null;
+
+        var itens = venda.Itens
+            .Select(i => new ReciboItem(i.Mercadoria.Nome, i.Quantidade, i.PrecoUnitario))
+            .ToList();
+
+        return new ReciboVenda(
+            venda.Id, venda.DataVenda, venda.Cliente?.Nome, venda.ClienteCpf, venda.ValorTotal, itens);
+    }
+
     public async Task<ResultadoOperacao> FinalizarVendaAsync(
         string? clienteCpf, IReadOnlyList<ItemCarrinho> itens,
         CancellationToken cancellationToken = default)
