@@ -48,7 +48,8 @@
                             Content="🏠  Início" Click="BtnInicio_Click"/>
                     <Button x:Name="BtnCadastroMercadoria" Style="{StaticResource NavButton}"
                             Content="➕  Cadastro de Mercadoria" Click="BtnCadastroMercadoria_Click"/>
-                    <Button Style="{StaticResource NavButton}" Content="📦  Manter Mercadorias" IsEnabled="False"/>
+                    <Button x:Name="BtnManterMercadorias" Style="{StaticResource NavButton}"
+                            Content="📦  Manter Mercadorias" Click="BtnManterMercadorias_Click"/>
                     <Button Style="{StaticResource NavButton}" Content="🛒  Vendas (PDV)" IsEnabled="False"/>
                     <Button Style="{StaticResource NavButton}" Content="📜  Histórico de Vendas" IsEnabled="False"/>
                     <Button Style="{StaticResource NavButton}" Content="📊  Relatório de Lucros" IsEnabled="False"/>

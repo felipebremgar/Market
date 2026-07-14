@@ -28,41 +28,19 @@ public partial class CadastroMercadoriaView : UserControl
         Loaded += (_, _) => TxtCodigoBarras.Focus();
     }
 
-    // ----- Filtros de entrada -----
+    // ----- Filtros de entrada (delegam ao utilitário compartilhado) -----
 
     private void Decimal_PreviewTextInput(object sender, TextCompositionEventArgs e)
-    {
-        var textBox = (TextBox)sender;
-        foreach (var c in e.Text)
-        {
-            if (char.IsDigit(c)) continue;
-            if (c == ',' && !textBox.Text.Contains(',')) continue;
-            e.Handled = true;
-            return;
-        }
-    }
+        => EntradaNumerica.FiltrarDecimal(sender, e);
 
     private void Inteiro_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        => e.Handled = !e.Text.All(char.IsDigit);
+        => EntradaNumerica.FiltrarInteiro(sender, e);
 
-    // Colagem (Ctrl+V) não passa por PreviewTextInput — filtrada aqui.
     private void Decimal_Pasting(object sender, System.Windows.DataObjectPastingEventArgs e)
-    {
-        if (e.DataObject.GetDataPresent(System.Windows.DataFormats.UnicodeText)
-            && e.DataObject.GetData(System.Windows.DataFormats.UnicodeText) is string texto
-            && texto.All(c => char.IsDigit(c) || c is ',' or '.'))
-            return;
-        e.CancelCommand();
-    }
+        => EntradaNumerica.ColarDecimal(sender, e);
 
     private void Inteiro_Pasting(object sender, System.Windows.DataObjectPastingEventArgs e)
-    {
-        if (e.DataObject.GetDataPresent(System.Windows.DataFormats.UnicodeText)
-            && e.DataObject.GetData(System.Windows.DataFormats.UnicodeText) is string texto
-            && texto.All(char.IsDigit))
-            return;
-        e.CancelCommand();
-    }
+        => EntradaNumerica.ColarInteiro(sender, e);
 
     private void ChkPossuiValidade_Changed(object sender, System.Windows.RoutedEventArgs e)
     {
@@ -116,9 +94,9 @@ public partial class CadastroMercadoriaView : UserControl
         // Parse dos campos numéricos: formato inválido vira erro visível — nunca é
         // convertido silenciosamente para 0 (evita salvar preço "abc" como R$ 0,00).
         var errosFormato = new List<string>();
-        TryParseReais(TxtPrecoCusto.Text, "O preço de custo", errosFormato, out var custoReais);
-        TryParseReais(TxtPrecoVenda.Text, "O preço de venda", errosFormato, out var vendaReais);
-        TryParseInteiro(TxtQuantidade.Text, "A quantidade", errosFormato, out var quantidade);
+        EntradaNumerica.TryParseReais(TxtPrecoCusto.Text, "O preço de custo", errosFormato, out var custoReais);
+        EntradaNumerica.TryParseReais(TxtPrecoVenda.Text, "O preço de venda", errosFormato, out var vendaReais);
+        EntradaNumerica.TryParseInteiro(TxtQuantidade.Text, "A quantidade", errosFormato, out var quantidade);
 
         if (errosFormato.Count > 0)
         {
@@ -171,45 +149,6 @@ public partial class CadastroMercadoriaView : UserControl
     }
 
     // ----- Auxiliares -----
-
-    // Limite defensivo (R$): impede overflow na conversão para centavos e valores absurdos.
-    private const decimal MaxReais = 9_999_999m;
-
-    private static bool TryParseReais(string texto, string rotulo, List<string> erros, out decimal reais)
-    {
-        reais = 0m;
-        texto = texto.Trim();
-        if (texto.Length == 0) return true; // vazio = 0 (mesmo default do DDL)
-
-        if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.CurrentCulture, out reais))
-        {
-            erros.Add($"{rotulo} está em formato inválido.");
-            reais = 0m;
-            return false;
-        }
-        if (reais > MaxReais)
-        {
-            erros.Add($"{rotulo} excede o máximo permitido.");
-            reais = 0m;
-            return false;
-        }
-        return true;
-    }
-
-    private static bool TryParseInteiro(string texto, string rotulo, List<string> erros, out int valor)
-    {
-        valor = 0;
-        texto = texto.Trim();
-        if (texto.Length == 0) return true;
-
-        if (!int.TryParse(texto, NumberStyles.Integer, CultureInfo.CurrentCulture, out valor))
-        {
-            erros.Add($"{rotulo} está em formato inválido.");
-            valor = 0;
-            return false;
-        }
-        return true;
-    }
 
     private void LimparCampos()
     {

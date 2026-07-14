@@ -23,4 +23,7 @@ public partial class MainWindow : Window
 
     private void BtnCadastroMercadoria_Click(object sender, RoutedEventArgs e)
         => Navegar<CadastroMercadoriaView>();
+
+    private void BtnManterMercadorias_Click(object sender, RoutedEventArgs e)
+        => Navegar<ManterMercadoriasView>();
 }

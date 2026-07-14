@@ -190,8 +190,69 @@ public class CrudSelfTest
         Check("Service: código de barras duplicado rejeitado",
             !codigoDuplicado.Sucesso && codigoDuplicado.Erros.Any(e => e.Contains("código de barras")));
 
-        // Limpa a mercadoria cadastrada pelo teste.
-        if (cadastrada is not null) await _mercadorias.DeleteAsync(cadastrada);
+        // ---- Manter Mercadorias (Dia 4): filtros, edição e exclusão lógica ----
+        var macarraoId = cadastroOk.IdGerado ?? 0;
+        var todas = await _mercadoriaService.ListarAsync(FiltroMercadoria.Nenhum);
+        Check("Listar sem filtro traz ativas (>= 3)", todas.Count >= 3);
+
+        var porNome = await _mercadoriaService.ListarAsync(new FiltroMercadoria { Nome = "Arroz" });
+        Check("Filtro por nome parcial (Arroz -> 1)", porNome.Count == 1 && porNome[0].Nome == "Arroz 5kg");
+
+        var porPreco = await _mercadoriaService.ListarAsync(
+            new FiltroMercadoria { PrecoMinCentavos = 2000, PrecoMaxCentavos = 3000 });
+        Check("Filtro por faixa de preço (20-30 -> só Arroz)",
+            porPreco.Count == 1 && porPreco[0].Nome == "Arroz 5kg");
+
+        var porQtd = await _mercadoriaService.ListarAsync(new FiltroMercadoria { QtdMin = 60 });
+        Check("Filtro por quantidade mínima (>=60 -> só Feijão)",
+            porQtd.Count == 1 && porQtd[0].Nome == "Feijão 1kg");
+
+        var porCodigo = await _mercadoriaService.ListarAsync(
+            new FiltroMercadoria { CodigoBarras = "7890000000123" });
+        Check("Filtro por código exato", porCodigo.Count == 1 && porCodigo[0].Id == macarraoId);
+
+        var porValidade = await _mercadoriaService.ListarAsync(
+            new FiltroMercadoria { ValidadeIni = new DateOnly(2027, 1, 1), ValidadeFim = new DateOnly(2027, 12, 31) });
+        Check("Filtro por faixa de validade (só Macarrão tem validade)",
+            porValidade.Count == 1 && porValidade[0].Id == macarraoId);
+
+        var semCorrespondencia = await _mercadoriaService.ListarAsync(
+            new FiltroMercadoria { Nome = "Inexistente XYZ" });
+        Check("Filtro sem correspondência retorna vazio", semCorrespondencia.Count == 0);
+
+        // Edição
+        var updOk = await _mercadoriaService.AtualizarAsync(macarraoId, new CadastroMercadoriaDados
+        {
+            Nome = "Macarrão Grano Duro", PrecoCustoReais = 4m, PrecoVendaReais = 7.90m,
+            Quantidade = 35, CodigoBarras = "7890000000123", Validade = new DateOnly(2027, 1, 31)
+        });
+        var reMacarrao = await _mercadorias.GetByIdAsync(macarraoId);
+        Check("Atualizar persiste (preço 7,90 -> 790, nome novo)",
+            updOk.Sucesso && reMacarrao?.PrecoVenda == 790 && reMacarrao?.Nome == "Macarrão Grano Duro");
+
+        var updDup = await _mercadoriaService.AtualizarAsync(macarraoId, new CadastroMercadoriaDados
+        {
+            Nome = "Macarrão Grano Duro", PrecoVendaReais = 7.90m, Quantidade = 35,
+            CodigoBarras = "7891234567890" // código do Arroz
+        });
+        Check("Atualizar com código de outro item é rejeitado", !updDup.Sucesso);
+
+        var updMesmo = await _mercadoriaService.AtualizarAsync(macarraoId, new CadastroMercadoriaDados
+        {
+            Nome = "Macarrão Grano Duro", PrecoVendaReais = 7.90m, Quantidade = 35,
+            CodigoBarras = "7890000000123" // o próprio código
+        });
+        Check("Atualizar mantendo o próprio código é aceito", updMesmo.Sucesso);
+
+        // Exclusão lógica
+        var delOk = await _mercadoriaService.ExcluirAsync(macarraoId);
+        var listaAposExcluir = await _mercadoriaService.ListarAsync(FiltroMercadoria.Nenhum);
+        var noBanco = await _mercadorias.GetByIdAsync(macarraoId);
+        Check("Excluir some da listagem", delOk.Sucesso && listaAposExcluir.All(m => m.Id != macarraoId));
+        Check("Excluído continua no banco com Ativo = 0", noBanco is { Ativo: false });
+
+        // Limpa fisicamente o item de teste.
+        if (noBanco is not null) await _mercadorias.DeleteAsync(noBanco);
 
         var resultado = ok ? "PASSOU" : "FALHOU";
         report.Insert(0, $"CRUD self-test: {resultado}{Environment.NewLine}");

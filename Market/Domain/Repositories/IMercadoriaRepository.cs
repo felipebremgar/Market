@@ -15,4 +15,11 @@ public interface IMercadoriaRepository : IRepository<Mercadoria>
     /// <summary>Busca uma mercadoria ativa pelo código de barras (usado no PDV — Dia 6).</summary>
     Task<Mercadoria?> ObterPorCodigoBarrasAsync(string codigoBarras,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Lista mercadorias ativas aplicando o <paramref name="filtro"/> dinamicamente
+    /// (campos nulos são ignorados), ordenadas por Nome.
+    /// </summary>
+    Task<IReadOnlyList<Mercadoria>> ListarAsync(FiltroMercadoria filtro,
+        CancellationToken cancellationToken = default);
 }

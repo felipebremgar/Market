@@ -103,6 +103,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<MainWindow>();
         services.AddTransient<HomeView>();
         services.AddTransient<CadastroMercadoriaView>();
+        services.AddTransient<ManterMercadoriasView>();
+        services.AddTransient<EditarMercadoriaWindow>();
 
         return services.BuildServiceProvider();
     }

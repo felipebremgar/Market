@@ -7,8 +7,9 @@ using Microsoft.Extensions.Logging;
 namespace Market.Application.Services;
 
 /// <summary>
-/// Regras de negócio do cadastro de mercadorias, independentes da UI:
-/// validação, conversão de preços para centavos e checagem de código de barras único.
+/// Regras de negócio de mercadorias, independentes da UI: validação, conversão de
+/// preços para centavos, código de barras único, listagem filtrada, edição e
+/// exclusão lógica.
 /// </summary>
 public class MercadoriaService
 {
@@ -23,12 +24,96 @@ public class MercadoriaService
         _logger = logger;
     }
 
+    public Task<IReadOnlyList<Mercadoria>> ListarAsync(
+        FiltroMercadoria filtro, CancellationToken cancellationToken = default)
+        => _repositorio.ListarAsync(filtro, cancellationToken);
+
     public async Task<ResultadoOperacao> CadastrarAsync(
         CadastroMercadoriaDados dados, CancellationToken cancellationToken = default)
     {
+        var erros = ValidarCampos(dados, out var nome, out var codigoBarras);
+
+        if (codigoBarras is not null &&
+            await _repositorio.CodigoBarrasExisteAsync(codigoBarras, null, cancellationToken))
+            erros.Add($"Já existe uma mercadoria com o código de barras {codigoBarras}.");
+
+        if (erros.Count > 0)
+            return ResultadoOperacao.Falha(erros);
+
+        var mercadoria = new Mercadoria { Ativo = true };
+        AplicarDados(mercadoria, dados, nome, codigoBarras);
+
+        try
+        {
+            await _repositorio.AddAsync(mercadoria, cancellationToken);
+        }
+        catch (DbUpdateException ex) when (EhViolacaoUnicidade(ex))
+        {
+            _logger.LogWarning(ex, "Violação de unicidade ao cadastrar mercadoria {Codigo}.", codigoBarras);
+            return ResultadoOperacao.Falha(
+                $"Já existe uma mercadoria com o código de barras {codigoBarras}.");
+        }
+
+        _logger.LogInformation("Mercadoria cadastrada: {Nome} (Id {Id}).", mercadoria.Nome, mercadoria.Id);
+        return ResultadoOperacao.Ok(mercadoria.Id);
+    }
+
+    public async Task<ResultadoOperacao> AtualizarAsync(
+        int id, CadastroMercadoriaDados dados, CancellationToken cancellationToken = default)
+    {
+        var erros = ValidarCampos(dados, out var nome, out var codigoBarras);
+
+        // Ignora o próprio registro na checagem de código único.
+        if (codigoBarras is not null &&
+            await _repositorio.CodigoBarrasExisteAsync(codigoBarras, id, cancellationToken))
+            erros.Add($"Já existe uma mercadoria com o código de barras {codigoBarras}.");
+
+        if (erros.Count > 0)
+            return ResultadoOperacao.Falha(erros);
+
+        var mercadoria = await _repositorio.GetByIdAsync(id);
+        if (mercadoria is null || !mercadoria.Ativo)
+            return ResultadoOperacao.Falha("Mercadoria não encontrada.");
+
+        AplicarDados(mercadoria, dados, nome, codigoBarras);
+
+        try
+        {
+            await _repositorio.UpdateAsync(mercadoria, cancellationToken);
+        }
+        catch (DbUpdateException ex) when (EhViolacaoUnicidade(ex))
+        {
+            _logger.LogWarning(ex, "Violação de unicidade ao editar mercadoria {Id}.", id);
+            return ResultadoOperacao.Falha(
+                $"Já existe uma mercadoria com o código de barras {codigoBarras}.");
+        }
+
+        _logger.LogInformation("Mercadoria atualizada: {Nome} (Id {Id}).", mercadoria.Nome, id);
+        return ResultadoOperacao.Ok(id);
+    }
+
+    /// <summary>Exclusão lógica: marca Ativo = 0, preservando o registro físico.</summary>
+    public async Task<ResultadoOperacao> ExcluirAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var mercadoria = await _repositorio.GetByIdAsync(id);
+        if (mercadoria is null || !mercadoria.Ativo)
+            return ResultadoOperacao.Falha("Mercadoria não encontrada.");
+
+        mercadoria.Ativo = false;
+        await _repositorio.UpdateAsync(mercadoria, cancellationToken);
+
+        _logger.LogInformation("Mercadoria excluída logicamente: {Nome} (Id {Id}).", mercadoria.Nome, id);
+        return ResultadoOperacao.Ok(id);
+    }
+
+    // ----- Auxiliares -----
+
+    private static List<string> ValidarCampos(
+        CadastroMercadoriaDados dados, out string nome, out string? codigoBarras)
+    {
         var erros = new List<string>();
 
-        var nome = dados.Nome?.Trim() ?? string.Empty;
+        nome = dados.Nome?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(nome))
             erros.Add("O nome é obrigatório.");
         if (dados.PrecoCustoReais < 0)
@@ -38,43 +123,22 @@ public class MercadoriaService
         if (dados.Quantidade < 0)
             erros.Add("A quantidade não pode ser negativa.");
 
-        var codigoBarras = string.IsNullOrWhiteSpace(dados.CodigoBarras)
-            ? null : dados.CodigoBarras.Trim();
-
-        if (codigoBarras is not null &&
-            await _repositorio.CodigoBarrasExisteAsync(codigoBarras, null, cancellationToken))
-            erros.Add($"Já existe uma mercadoria com o código de barras {codigoBarras}.");
-
-        if (erros.Count > 0)
-            return ResultadoOperacao.Falha(erros);
-
-        var mercadoria = new Mercadoria
-        {
-            Nome = nome,
-            Fornecedor = string.IsNullOrWhiteSpace(dados.Fornecedor) ? null : dados.Fornecedor.Trim(),
-            PrecoCusto = Moeda.ParaCentavos(dados.PrecoCustoReais),
-            PrecoVenda = Moeda.ParaCentavos(dados.PrecoVendaReais),
-            Quantidade = dados.Quantidade,
-            CodigoBarras = codigoBarras,
-            Validade = dados.Validade,
-            Ativo = true
-        };
-
-        try
-        {
-            await _repositorio.AddAsync(mercadoria, cancellationToken);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is SqliteException
-                                           { SqliteErrorCode: SqliteConstraint })
-        {
-            // Rede de segurança contra corrida entre a checagem e a inserção:
-            // o índice único UQ_Mercadoria_CodigoBarras barra o duplicado no banco.
-            _logger.LogWarning(ex, "Violação de unicidade ao cadastrar mercadoria {Codigo}.", codigoBarras);
-            return ResultadoOperacao.Falha(
-                $"Já existe uma mercadoria com o código de barras {codigoBarras}.");
-        }
-
-        _logger.LogInformation("Mercadoria cadastrada: {Nome} (Id {Id}).", mercadoria.Nome, mercadoria.Id);
-        return ResultadoOperacao.Ok(mercadoria.Id);
+        codigoBarras = string.IsNullOrWhiteSpace(dados.CodigoBarras) ? null : dados.CodigoBarras.Trim();
+        return erros;
     }
+
+    private static void AplicarDados(
+        Mercadoria mercadoria, CadastroMercadoriaDados dados, string nome, string? codigoBarras)
+    {
+        mercadoria.Nome = nome;
+        mercadoria.Fornecedor = string.IsNullOrWhiteSpace(dados.Fornecedor) ? null : dados.Fornecedor.Trim();
+        mercadoria.PrecoCusto = Moeda.ParaCentavos(dados.PrecoCustoReais);
+        mercadoria.PrecoVenda = Moeda.ParaCentavos(dados.PrecoVendaReais);
+        mercadoria.Quantidade = dados.Quantidade;
+        mercadoria.CodigoBarras = codigoBarras;
+        mercadoria.Validade = dados.Validade;
+    }
+
+    private static bool EhViolacaoUnicidade(DbUpdateException ex)
+        => ex.InnerException is SqliteException { SqliteErrorCode: SqliteConstraint };
 }
