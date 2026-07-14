@@ -1,0 +1,108 @@
+<Window x:Class="Market.UI.Views.RecebimentoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Recebimento" Height="470" Width="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style TargetType="RadioButton" x:Key="FormaBotao">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Padding" Value="0,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Fundo" CornerRadius="4" Background="#ECEFF4"
+                                BorderBrush="#D8DEE9" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                            <TextBlock Text="{TemplateBinding Content}" HorizontalAlignment="Center"
+                                       FontSize="13" FontWeight="SemiBold" Foreground="#2E3440"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Fundo" Property="Background" Value="#88C0D0"/>
+                                <Setter TargetName="Fundo" Property="BorderBrush" Value="#5E81AC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Total a pagar -->
+        <Border Grid.Row="0" Background="#2E3440" CornerRadius="6" Padding="16">
+            <StackPanel>
+                <TextBlock Text="TOTAL A PAGAR" Foreground="#88C0D0" FontWeight="Bold"/>
+                <TextBlock x:Name="TxtTotal" AutomationProperties.AutomationId="RecebimentoTotal"
+                           Text="R$ 0,00" Foreground="White" FontSize="30" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Forma de pagamento -->
+        <TextBlock Grid.Row="1" Text="Forma de pagamento" Margin="0,16,0,6"
+                   FontSize="13" Foreground="#4C566A"/>
+        <UniformGrid Grid.Row="2" Columns="3">
+            <RadioButton x:Name="OpDinheiro" Content="Dinheiro" Style="{StaticResource FormaBotao}"
+                         Checked="Forma_Changed"/>
+            <RadioButton x:Name="OpCartao" Content="Cartão" Style="{StaticResource FormaBotao}"
+                         Checked="Forma_Changed"/>
+            <RadioButton x:Name="OpPix" Content="Pix" Style="{StaticResource FormaBotao}"
+                         Margin="0" Checked="Forma_Changed"/>
+        </UniformGrid>
+
+        <!-- Valor pago (apenas dinheiro) -->
+        <StackPanel Grid.Row="3" x:Name="PainelValorPago" Margin="0,16,0,0">
+            <TextBlock Text="Valor recebido (R$)" FontSize="13" Foreground="#4C566A"/>
+            <Grid Margin="0,4,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0" x:Name="TxtValorPago" Height="36" FontSize="16"
+                         VerticalContentAlignment="Center" MaxLength="12"
+                         AutomationProperties.AutomationId="TxtValorPago"
+                         PreviewTextInput="Decimal_PreviewTextInput"
+                         DataObject.Pasting="Decimal_Pasting"
+                         TextChanged="TxtValorPago_TextChanged"
+                         KeyDown="TxtValorPago_KeyDown"/>
+                <Button Grid.Column="2" x:Name="BtnValorExato" Content="Valor exato" Height="36"
+                        Padding="10,0" Click="BtnValorExato_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Troco -->
+        <Border Grid.Row="4" x:Name="PainelTroco" Margin="0,16,0,0" CornerRadius="6"
+                Padding="16,12" Background="#E8F5E9">
+            <Grid>
+                <TextBlock x:Name="TxtRotuloTroco" Text="TROCO" Foreground="#2E7D32"
+                           FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtTroco" AutomationProperties.AutomationId="TxtTroco"
+                           Text="R$ 0,00" Foreground="#2E7D32" FontSize="24" FontWeight="Bold"
+                           HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+
+        <!-- Ações -->
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <Button Content="Voltar" Width="110" Height="40" Margin="0,0,10,0"
+                    Click="BtnVoltar_Click" IsCancel="True"/>
+            <Button x:Name="BtnConfirmar" Content="Confirmar" Width="140" Height="40"
+                    AutomationProperties.AutomationId="BtnConfirmar"
+                    Click="BtnConfirmar_Click" IsDefault="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

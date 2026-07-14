@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 using Market.Application.Services;
 using Market.Domain;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +47,13 @@ public partial class PdvView : UserControl
     {
         if (_carrinho.Vazio) return;
 
+        // Recebimento: forma de pagamento e troco antes de efetivar a venda.
+        var recebimento = new RecebimentoWindow(_carrinho.TotalCentavos) { Owner = Window.GetWindow(this) };
+        if (recebimento.ShowDialog() != true || recebimento.Pagamento is null)
+            return; // caixa voltou; carrinho preservado
+
+        var pagamento = recebimento.Pagamento;
+
         BtnFinalizar.IsEnabled = false;
         try
         {
@@ -61,7 +70,7 @@ public partial class PdvView : UserControl
             var recibo = await _vendas.ObterReciboAsync(resultado.IdGerado!.Value);
             if (recibo is not null)
             {
-                var janela = new ReciboWindow(recibo) { Owner = Window.GetWindow(this) };
+                var janela = new ReciboWindow(recibo, pagamento) { Owner = Window.GetWindow(this) };
                 janela.ShowDialog();
             }
 
@@ -160,10 +169,29 @@ public partial class PdvView : UserControl
     {
         var resultado = _carrinho.Adicionar(mercadoria);
         if (resultado.Sucesso)
-            LimparMensagem();
+        {
+            var linha = _carrinho.Linhas.FirstOrDefault(l => l.MercadoriaId == mercadoria.Id);
+            var qtd = linha?.Quantidade ?? 1;
+            MostrarSucesso($"Adicionado: {mercadoria.Nome}  (x{qtd})");
+        }
         else
+        {
             MostrarErro(resultado.MensagemErro);
+        }
         AtualizarCarrinho();
+
+        if (resultado.Sucesso)
+            DestacarLinha(mercadoria.Id);
+    }
+
+    /// <summary>Seleciona e rola até a linha do produto, confirmando visualmente o último bipe.</summary>
+    private void DestacarLinha(int mercadoriaId)
+    {
+        var linha = GridCarrinho.Items.OfType<LinhaCarrinho>()
+            .FirstOrDefault(l => l.MercadoriaId == mercadoriaId);
+        if (linha is null) return;
+        GridCarrinho.SelectedItem = linha;
+        GridCarrinho.ScrollIntoView(linha);
     }
 
     // ----- Quantidade / remoção -----
@@ -195,6 +223,15 @@ public partial class PdvView : UserControl
 
     private void BtnCancelar_Click(object sender, RoutedEventArgs e)
     {
+        if (!_carrinho.Vazio)
+        {
+            var confirmacao = MessageBox.Show(
+                $"Descartar os {_carrinho.Linhas.Count} item(ns) do carrinho?",
+                "Cancelar venda", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (confirmacao != MessageBoxResult.Yes)
+                return;
+        }
+
         _carrinho.Limpar();
         RemoverClienteSelecionado();
         LimparMensagem();
@@ -272,9 +309,17 @@ public partial class PdvView : UserControl
         BtnFinalizar.IsEnabled = !_carrinho.Vazio;
     }
 
-    private void MostrarErro(string mensagem)
+    private static readonly Brush FundoErro = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BF616A"));
+    private static readonly Brush FundoSucesso = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A3BE8C"));
+
+    private void MostrarErro(string mensagem) => MostrarMensagem(mensagem, FundoErro);
+
+    private void MostrarSucesso(string mensagem) => MostrarMensagem(mensagem, FundoSucesso);
+
+    private void MostrarMensagem(string mensagem, Brush fundo)
     {
         TxtMensagem.Text = mensagem;
+        PainelMensagem.Background = fundo;
         PainelMensagem.Visibility = Visibility.Visible;
     }
 
@@ -282,5 +327,37 @@ public partial class PdvView : UserControl
     {
         TxtMensagem.Text = string.Empty;
         PainelMensagem.Visibility = Visibility.Collapsed;
+    }
+
+    // ----- Quantidade digitável (edição direta na coluna Qtd) -----
+
+    private void GridCarrinho_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+    {
+        if (e.EditAction != DataGridEditAction.Commit) return;
+        if (e.Column != ColunaQtd) return;
+        if (e.Row.Item is not LinhaCarrinho linha) return;
+        if (e.EditingElement is not TextBox tb) return;
+
+        var texto = tb.Text.Trim();
+        if (!int.TryParse(texto, out var novaQtd) || novaQtd <= 0)
+        {
+            MostrarErro("Quantidade inválida. Informe um número inteiro maior que zero.");
+            tb.Text = linha.Quantidade.ToString(); // reverte para o valor atual
+            return;
+        }
+
+        if (novaQtd == linha.Quantidade) { LimparMensagem(); return; }
+
+        var resultado = _carrinho.AlterarQuantidade(linha.MercadoriaId, novaQtd);
+        if (!resultado.Sucesso)
+        {
+            MostrarErro(resultado.MensagemErro);
+            tb.Text = linha.Quantidade.ToString();
+            return;
+        }
+
+        LimparMensagem();
+        // Recalcula subtotais/total após o commit da edição (LinhaCarrinho não notifica mudanças).
+        Dispatcher.BeginInvoke(new Action(AtualizarCarrinho), DispatcherPriority.Background);
     }
 }

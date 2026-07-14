@@ -50,15 +50,17 @@
         <!-- Carrinho -->
         <DataGrid Grid.Row="2" Grid.Column="0" x:Name="GridCarrinho"
                   AutomationProperties.AutomationId="GridCarrinho"
-                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                  AutoGenerateColumns="False" IsReadOnly="False" CanUserAddRows="False"
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0"
-                  SelectionMode="Single">
+                  SelectionMode="Single" SelectionUnit="FullRow"
+                  CellEditEnding="GridCarrinho_CellEditEnding">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*"/>
-                <DataGridTextColumn Header="Preço" Binding="{Binding PrecoUnitarioTexto}" Width="Auto"/>
-                <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="Auto"/>
-                <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto"/>
-                <DataGridTemplateColumn Header="" Width="Auto">
+                <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Preço" Binding="{Binding PrecoUnitarioTexto}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="60"
+                                    x:Name="ColunaQtd"/>
+                <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="" Width="Auto" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
@@ -95,7 +97,7 @@
 
                 <StackPanel DockPanel.Dock="Bottom">
                     <Border x:Name="PainelMensagem" Visibility="Collapsed" Margin="0,0,0,8"
-                            Padding="8,6" CornerRadius="4" Background="#BF616A">
+                            Padding="8,6" CornerRadius="4">
                         <TextBlock x:Name="TxtMensagem" Foreground="White" TextWrapping="Wrap"/>
                     </Border>
                     <Button x:Name="BtnFinalizar" Content="Finalizar venda" Height="44"
