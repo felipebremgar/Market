@@ -45,6 +45,25 @@ public partial class CadastroMercadoriaView : UserControl
     private void Inteiro_PreviewTextInput(object sender, TextCompositionEventArgs e)
         => e.Handled = !e.Text.All(char.IsDigit);
 
+    // Colagem (Ctrl+V) não passa por PreviewTextInput — filtrada aqui.
+    private void Decimal_Pasting(object sender, System.Windows.DataObjectPastingEventArgs e)
+    {
+        if (e.DataObject.GetDataPresent(System.Windows.DataFormats.UnicodeText)
+            && e.DataObject.GetData(System.Windows.DataFormats.UnicodeText) is string texto
+            && texto.All(c => char.IsDigit(c) || c is ',' or '.'))
+            return;
+        e.CancelCommand();
+    }
+
+    private void Inteiro_Pasting(object sender, System.Windows.DataObjectPastingEventArgs e)
+    {
+        if (e.DataObject.GetDataPresent(System.Windows.DataFormats.UnicodeText)
+            && e.DataObject.GetData(System.Windows.DataFormats.UnicodeText) is string texto
+            && texto.All(char.IsDigit))
+            return;
+        e.CancelCommand();
+    }
+
     private void ChkPossuiValidade_Changed(object sender, System.Windows.RoutedEventArgs e)
     {
         DtValidade.IsEnabled = ChkPossuiValidade.IsChecked == true;
@@ -67,10 +86,19 @@ public partial class CadastroMercadoriaView : UserControl
             return;
         }
 
-        if (await _repositorio.CodigoBarrasExisteAsync(codigo))
-            MostrarAviso($"Já existe uma mercadoria com o código de barras {codigo}.");
-        else
-            LimparMensagem();
+        // async void: qualquer exceção não tratada aqui derrubaria o app.
+        try
+        {
+            if (await _repositorio.CodigoBarrasExisteAsync(codigo))
+                MostrarAviso($"Já existe uma mercadoria com o código de barras {codigo}.");
+            else
+                LimparMensagem();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao verificar código de barras {Codigo}.", codigo);
+            MostrarAviso("Não foi possível verificar o código de barras agora.");
+        }
 
         TxtNome.Focus();
     }
@@ -85,13 +113,26 @@ public partial class CadastroMercadoriaView : UserControl
             return;
         }
 
+        // Parse dos campos numéricos: formato inválido vira erro visível — nunca é
+        // convertido silenciosamente para 0 (evita salvar preço "abc" como R$ 0,00).
+        var errosFormato = new List<string>();
+        TryParseReais(TxtPrecoCusto.Text, "O preço de custo", errosFormato, out var custoReais);
+        TryParseReais(TxtPrecoVenda.Text, "O preço de venda", errosFormato, out var vendaReais);
+        TryParseInteiro(TxtQuantidade.Text, "A quantidade", errosFormato, out var quantidade);
+
+        if (errosFormato.Count > 0)
+        {
+            MostrarErro(string.Join(Environment.NewLine, errosFormato));
+            return;
+        }
+
         var dados = new CadastroMercadoriaDados
         {
             Nome = TxtNome.Text,
             Fornecedor = TxtFornecedor.Text,
-            PrecoCustoReais = ParseReais(TxtPrecoCusto.Text),
-            PrecoVendaReais = ParseReais(TxtPrecoVenda.Text),
-            Quantidade = ParseInteiro(TxtQuantidade.Text),
+            PrecoCustoReais = custoReais,
+            PrecoVendaReais = vendaReais,
+            Quantidade = quantidade,
             CodigoBarras = TxtCodigoBarras.Text,
             Validade = ChkPossuiValidade.IsChecked == true && DtValidade.SelectedDate is DateTime data
                 ? DateOnly.FromDateTime(data)
@@ -131,11 +172,44 @@ public partial class CadastroMercadoriaView : UserControl
 
     // ----- Auxiliares -----
 
-    private static decimal ParseReais(string texto)
-        => decimal.TryParse(texto, NumberStyles.Number, CultureInfo.CurrentCulture, out var v) ? v : 0m;
+    // Limite defensivo (R$): impede overflow na conversão para centavos e valores absurdos.
+    private const decimal MaxReais = 9_999_999m;
 
-    private static int ParseInteiro(string texto)
-        => int.TryParse(texto, out var v) ? v : 0;
+    private static bool TryParseReais(string texto, string rotulo, List<string> erros, out decimal reais)
+    {
+        reais = 0m;
+        texto = texto.Trim();
+        if (texto.Length == 0) return true; // vazio = 0 (mesmo default do DDL)
+
+        if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.CurrentCulture, out reais))
+        {
+            erros.Add($"{rotulo} está em formato inválido.");
+            reais = 0m;
+            return false;
+        }
+        if (reais > MaxReais)
+        {
+            erros.Add($"{rotulo} excede o máximo permitido.");
+            reais = 0m;
+            return false;
+        }
+        return true;
+    }
+
+    private static bool TryParseInteiro(string texto, string rotulo, List<string> erros, out int valor)
+    {
+        valor = 0;
+        texto = texto.Trim();
+        if (texto.Length == 0) return true;
+
+        if (!int.TryParse(texto, NumberStyles.Integer, CultureInfo.CurrentCulture, out valor))
+        {
+            erros.Add($"{rotulo} está em formato inválido.");
+            valor = 0;
+            return false;
+        }
+        return true;
+    }
 
     private void LimparCampos()
     {

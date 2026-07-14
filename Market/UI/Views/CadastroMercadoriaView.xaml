@@ -41,16 +41,22 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
                     <TextBlock Text="Preço de custo (R$)" Style="{StaticResource Rotulo}"/>
-                    <TextBox x:Name="TxtPrecoCusto" PreviewTextInput="Decimal_PreviewTextInput"/>
+                    <TextBox x:Name="TxtPrecoCusto" MaxLength="12"
+                             PreviewTextInput="Decimal_PreviewTextInput"
+                             DataObject.Pasting="Decimal_Pasting"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Preço de venda (R$)" Style="{StaticResource Rotulo}"/>
-                    <TextBox x:Name="TxtPrecoVenda" PreviewTextInput="Decimal_PreviewTextInput"/>
+                    <TextBox x:Name="TxtPrecoVenda" MaxLength="12"
+                             PreviewTextInput="Decimal_PreviewTextInput"
+                             DataObject.Pasting="Decimal_Pasting"/>
                 </StackPanel>
             </Grid>
 
             <TextBlock Text="Quantidade em estoque" Style="{StaticResource Rotulo}"/>
-            <TextBox x:Name="TxtQuantidade" PreviewTextInput="Inteiro_PreviewTextInput" Text="0"/>
+            <TextBox x:Name="TxtQuantidade" MaxLength="7" Text="0"
+                     PreviewTextInput="Inteiro_PreviewTextInput"
+                     DataObject.Pasting="Inteiro_Pasting"/>
 
             <CheckBox x:Name="ChkPossuiValidade" Content="Possui validade"
                       Margin="0,16,0,0" Checked="ChkPossuiValidade_Changed"
