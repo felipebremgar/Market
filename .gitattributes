@@ -1,2 +1,24 @@
-# Auto detect text files and perform LF normalization
+# Normaliza fins de linha: o Git decide texto vs binário automaticamente.
 * text=auto
+
+# Código e configuração (Windows/Visual Studio usam CRLF no working tree).
+*.cs        text eol=crlf
+*.xaml      text eol=crlf
+*.csproj    text eol=crlf
+*.sln       text eol=crlf
+*.slnx      text eol=crlf
+*.json      text eol=crlf
+*.md        text eol=crlf
+*.sql       text eol=crlf
+
+# Devem manter LF (ferramentas Unix / GitHub Actions).
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.sh        text eol=lf
+
+# Binários — nunca converter.
+*.ico       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.db        binary
