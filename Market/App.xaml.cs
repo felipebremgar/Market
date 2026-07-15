@@ -41,7 +41,6 @@ public partial class App : System.Windows.Application
         try
         {
             Services.GetRequiredService<DatabaseInitializer>().Initialize();
-            Services.GetRequiredService<DataSeeder>().Seed();
         }
         catch (Exception ex)
         {
@@ -53,7 +52,7 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Modo utilitário: cria/valida o banco e semeia, sem abrir a UI.
+        // Modo utilitário: cria/valida o banco (e aplica migrações), sem abrir a UI.
         if (e.Args.Contains("--initdb"))
         {
             Shutdown(0);
@@ -125,7 +124,6 @@ public partial class App : System.Windows.Application
 
         services.AddSingleton<MigrationRunner>();
         services.AddSingleton<DatabaseInitializer>();
-        services.AddSingleton<DataSeeder>();
         services.AddSingleton<BackupService>();
         services.AddTransient<CrudSelfTest>();
 

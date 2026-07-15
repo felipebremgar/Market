@@ -4,6 +4,16 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [2.1.0] — Instalação limpa (sem dados de teste)
+
+### Removido
+- `DataSeeder`: o app não insere mais o cliente e as mercadorias de teste
+  ("Cliente Teste", "Arroz 5kg", "Feijão 1kg") em bancos novos. Era andaime do início do
+  projeto; instalações novas agora nascem sem nenhum dado.
+
+### Alterado
+- Versão do app para 2.1.0.
+
 ## [2.0.0] — Relatórios avançados
 
 ### Adicionado
