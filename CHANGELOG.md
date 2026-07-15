@@ -4,6 +4,22 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [2.3.0] — PDV: cliente e busca de produtos
+
+### Alterado
+- Menu lateral: removido o negrito no hover/tela ativa (o negrito sintético distorcia os
+  emojis dos ícones). O destaque agora vem só da cor mais viva e do fundo/barra de acento.
+- PDV: o cliente selecionado deixa de ser uma linha de texto e passa a um painel com nome,
+  CPF e contato — clicável, abrindo o cadastro para edição (e recarregando ao salvar).
+- PDV: a busca de cliente passa a ser **somente por CPF**, com máscara 000.000.000-00.
+- PDV: "Buscar por nome" (produtos) virou busca incremental estilo select2 — filtra a lista
+  enquanto digita (a partir de 2 caracteres, com debounce de 300 ms); ↓ entra na lista,
+  Enter escolhe, Esc fecha.
+
+### Corrigido
+- A lista de resultados da busca por nome ficava **atrás do carrinho** (irmão posterior na
+  mesma célula do Grid); agora usa `Panel.ZIndex` e sobrepõe corretamente.
+
 ## [2.2.0] — Máscara de CPF e correção da lista de clientes
 
 ### Adicionado

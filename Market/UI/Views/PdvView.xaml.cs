@@ -18,10 +18,16 @@ public partial class PdvView : UserControl
     private readonly IServiceProvider _services;
     private readonly ILogger<PdvView> _logger;
 
+    /// <summary>Mínimo de caracteres para disparar a busca incremental de produtos.</summary>
+    private const int MinimoParaBuscar = 2;
+
     private readonly Carrinho _carrinho = new();
+    private readonly DispatcherTimer _timerBusca = new() { Interval = TimeSpan.FromMilliseconds(300) };
+
+    private Cliente? _clienteSelecionado;
 
     /// <summary>CPF do cliente selecionado. Nulo = venda sem cliente.</summary>
-    public string? ClienteCpfSelecionado { get; private set; }
+    public string? ClienteCpfSelecionado => _clienteSelecionado?.Cpf;
 
     private sealed record ResultadoBusca(Mercadoria Mercadoria)
     {
@@ -38,6 +44,11 @@ public partial class PdvView : UserControl
         _vendas = vendas;
         _services = services;
         _logger = logger;
+
+        MascaraCpf.Aplicar(TxtCliente);
+        // Debounce: só busca quando o caixa para de digitar (evita uma consulta por tecla).
+        _timerBusca.Tick += async (_, _) => { _timerBusca.Stop(); await BuscarProdutosAsync(); };
+
         Loaded += (_, _) => { AtualizarCarrinho(); TxtCodigo.Focus(); };
     }
 
@@ -129,13 +140,28 @@ public partial class PdvView : UserControl
         TxtCodigo.Focus();
     }
 
-    private async void TxtBuscaNome_KeyDown(object sender, KeyEventArgs e)
+    /// <summary>Busca incremental: a cada tecla reinicia o debounce; a lista filtra sozinha.</summary>
+    private void TxtBuscaNome_TextChanged(object sender, TextChangedEventArgs e)
     {
-        if (e.Key != Key.Enter) return;
-        e.Handled = true;
+        _timerBusca.Stop();
 
+        if (TxtBuscaNome.Text.Trim().Length < MinimoParaBuscar)
+        {
+            ListaBusca.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        _timerBusca.Start();
+    }
+
+    private async Task BuscarProdutosAsync()
+    {
         var nome = TxtBuscaNome.Text.Trim();
-        if (nome.Length == 0) return;
+        if (nome.Length < MinimoParaBuscar)
+        {
+            ListaBusca.Visibility = Visibility.Collapsed;
+            return;
+        }
 
         try
         {
@@ -143,13 +169,37 @@ public partial class PdvView : UserControl
             ListaBusca.ItemsSource = achados.Select(m => new ResultadoBusca(m)).ToList();
             ListaBusca.DisplayMemberPath = nameof(ResultadoBusca.Texto);
             ListaBusca.Visibility = achados.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-            if (achados.Count == 0)
-                MostrarErro($"Nenhuma mercadoria ativa com '{nome}'.");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Falha na busca por nome {Nome}.", nome);
             MostrarErro("Não foi possível buscar o produto agora.");
+        }
+    }
+
+    /// <summary>Teclado no campo de busca: ↓ entra na lista, Enter escolhe, Esc fecha.</summary>
+    private void TxtBuscaNome_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            ListaBusca.Visibility = Visibility.Collapsed;
+            e.Handled = true;
+            return;
+        }
+
+        if (ListaBusca.Visibility != Visibility.Visible || ListaBusca.Items.Count == 0) return;
+
+        if (e.Key == Key.Down)
+        {
+            e.Handled = true;
+            ListaBusca.SelectedIndex = 0;
+            (ListaBusca.ItemContainerGenerator.ContainerFromIndex(0) as ListBoxItem)?.Focus();
+        }
+        else if (e.Key == Key.Enter)
+        {
+            e.Handled = true;
+            if (ListaBusca.SelectedIndex < 0) ListaBusca.SelectedIndex = 0;
+            AdicionarSelecionadoDaBusca();
         }
     }
 
@@ -245,33 +295,32 @@ public partial class PdvView : UserControl
 
     // ----- Cliente -----
 
+    /// <summary>Busca do cliente somente por CPF (o campo é mascarado 000.000.000-00).</summary>
     private async void TxtCliente_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter) return;
         e.Handled = true;
 
-        var termo = TxtCliente.Text.Trim();
-        if (termo.Length == 0) return;
+        var cpf = Cpf.Normalizar(TxtCliente.Text);
+        if (cpf.Length == 0) return;
 
-        var cpfNormalizado = Cpf.Normalizar(termo);
-        var porCpf = cpfNormalizado.Length == 11;
+        if (cpf.Length != 11)
+        {
+            MostrarErro("Informe o CPF completo (11 dígitos).");
+            return;
+        }
 
         try
         {
-            var achados = porCpf
-                ? await _clientes.BuscarAsync(cpfNormalizado, null)
-                : await _clientes.BuscarAsync(null, termo);
-
+            var achados = await _clientes.BuscarAsync(cpf, null);
             if (achados.Count == 1)
-                SelecionarCliente(achados[0].Cpf, achados[0].Nome);
-            else if (achados.Count == 0)
-                OferecerCadastroRapido(porCpf ? cpfNormalizado : string.Empty);
+                SelecionarCliente(achados[0]);
             else
-                MostrarErro("Vários clientes encontrados. Informe o CPF completo.");
+                OferecerCadastroRapido(cpf);   // CPF é a chave: se não existe, oferece cadastrar
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao buscar cliente {Termo}.", termo);
+            _logger.LogError(ex, "Falha ao buscar cliente {Cpf}.", cpf);
             MostrarErro("Não foi possível buscar o cliente agora.");
         }
     }
@@ -283,25 +332,59 @@ public partial class PdvView : UserControl
         if (cpfSugerido.Length > 0) janela.PreencherCpf(cpfSugerido);
         janela.ShowDialog();
         if (janela.Salvou && janela.ClienteCpf is not null)
-            SelecionarCliente(janela.ClienteCpf, janela.ClienteNome ?? string.Empty);
+            _ = SelecionarPorCpfAsync(janela.ClienteCpf);
     }
 
-    private void SelecionarCliente(string cpf, string nome)
+    /// <summary>Clique no painel do cliente: abre o cadastro para edição e recarrega ao salvar.</summary>
+    private void PainelCliente_Click(object sender, MouseButtonEventArgs e)
     {
-        ClienteCpfSelecionado = cpf;
-        TxtClienteSelecionado.Text = $"Cliente: {nome} — {cpf}";
-        BtnRemoverCliente.Visibility = Visibility.Visible;
+        if (_clienteSelecionado is null) return;
+
+        var janela = _services.GetRequiredService<CadastrarClienteWindow>();
+        janela.Owner = Window.GetWindow(this);
+        janela.CarregarParaEdicao(_clienteSelecionado);
+        janela.ShowDialog();
+        if (janela.Salvou)
+            _ = SelecionarPorCpfAsync(_clienteSelecionado.Cpf);
+    }
+
+    /// <summary>Recarrega o cliente do banco e o exibe (nome/contato atualizados após edição).</summary>
+    private async Task SelecionarPorCpfAsync(string cpf)
+    {
+        try
+        {
+            var achados = await _clientes.BuscarAsync(cpf, null);
+            if (achados.Count == 1) SelecionarCliente(achados[0]);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao recarregar o cliente {Cpf}.", cpf);
+        }
+    }
+
+    private void SelecionarCliente(Cliente cliente)
+    {
+        _clienteSelecionado = cliente;
+        TxtClienteNome.Text = cliente.Nome;
+        TxtClienteCpf.Text = MascaraCpf.Formatar(cliente.Cpf);
+        TxtClienteContato.Text = string.IsNullOrWhiteSpace(cliente.Contato)
+            ? "sem contato cadastrado"
+            : cliente.Contato;
+        PainelCliente.Visibility = Visibility.Visible;
         TxtCliente.Clear();
         LimparMensagem();
     }
 
-    private void BtnRemoverCliente_Click(object sender, RoutedEventArgs e) => RemoverClienteSelecionado();
+    private void BtnRemoverCliente_Click(object sender, RoutedEventArgs e)
+    {
+        e.Handled = true;   // impede o clique de borbulhar e abrir a edição do cliente
+        RemoverClienteSelecionado();
+    }
 
     private void RemoverClienteSelecionado()
     {
-        ClienteCpfSelecionado = null;
-        TxtClienteSelecionado.Text = string.Empty;
-        BtnRemoverCliente.Visibility = Visibility.Collapsed;
+        _clienteSelecionado = null;
+        PainelCliente.Visibility = Visibility.Collapsed;
     }
 
     // ----- Render -----

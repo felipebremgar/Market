@@ -25,17 +25,17 @@
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
+                            <!-- Sem FontWeight: o negrito sintético distorce os emojis dos ícones.
+                                 O destaque vem da cor mais viva e do fundo/barra de acento. -->
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="#3B4252"/>
                                 <Setter TargetName="Accent" Property="Background" Value="#616E88"/>
                                 <Setter Property="Foreground" Value="#FFFFFF"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <Trigger Property="Tag" Value="ativa">
                                 <Setter TargetName="Bd" Property="Background" Value="#434C5E"/>
                                 <Setter TargetName="Accent" Property="Background" Value="#88C0D0"/>
-                                <Setter Property="Foreground" Value="#FFFFFF"/>
-                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="#ECEFF4"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Foreground" Value="#6B7280"/>

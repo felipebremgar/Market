@@ -35,16 +35,17 @@
                              KeyDown="TxtCodigo_KeyDown"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Buscar por nome" FontSize="12" Foreground="#4C566A"/>
+                    <TextBlock Text="Buscar por nome (digite para filtrar)" FontSize="12" Foreground="#4C566A"/>
                     <TextBox x:Name="TxtBuscaNome" Height="32" VerticalContentAlignment="Center"
-                             KeyDown="TxtBuscaNome_KeyDown"/>
+                             TextChanged="TxtBuscaNome_TextChanged" KeyDown="TxtBuscaNome_KeyDown"/>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Resultados da busca por nome (sobrepõe quando há resultados) -->
+        <!-- Resultados da busca por nome: dropdown que sobrepõe o carrinho.
+             ZIndex é necessário porque o GridCarrinho é irmão posterior na mesma célula. -->
         <ListBox Grid.Row="2" Grid.Column="0" x:Name="ListaBusca" Visibility="Collapsed"
-                 AutomationProperties.AutomationId="ListaBusca"
+                 Panel.ZIndex="1" AutomationProperties.AutomationId="ListaBusca"
                  MouseDoubleClick="ListaBusca_Escolher" KeyDown="ListaBusca_KeyDown"
                  VerticalAlignment="Top" MaxHeight="180" Margin="0,0,0,10"/>
 
@@ -86,19 +87,39 @@
 
                     <Separator Margin="0,14" Background="#4C566A"/>
 
-                    <TextBlock Text="Cliente" Foreground="#88C0D0" FontWeight="Bold"/>
+                    <TextBlock Text="Cliente — CPF" Foreground="#88C0D0" FontWeight="Bold"/>
                     <TextBox x:Name="TxtCliente" Height="30" Margin="0,4,0,0"
                              VerticalContentAlignment="Center" KeyDown="TxtCliente_KeyDown"/>
-                    <TextBlock x:Name="TxtClienteSelecionado"
-                               AutomationProperties.AutomationId="TxtClienteSelecionado"
-                               Foreground="#A3BE8C" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                    <Button x:Name="BtnRemoverCliente" Content="✕ remover cliente" Margin="0,4,0,0"
-                            HorizontalAlignment="Left" Visibility="Collapsed" Click="BtnRemoverCliente_Click"/>
+
+                    <!-- Cliente selecionado: clicável, abre o cadastro para edição -->
+                    <Border x:Name="PainelCliente" Visibility="Collapsed" Margin="0,8,0,0"
+                            Background="#3B4252" CornerRadius="4" Padding="10,8" Cursor="Hand"
+                            AutomationProperties.AutomationId="PainelCliente"
+                            ToolTip="Clique para ver/editar os dados do cliente"
+                            MouseLeftButtonUp="PainelCliente_Click">
+                        <DockPanel>
+                            <Button x:Name="BtnRemoverCliente" DockPanel.Dock="Right" Content="✕"
+                                    Width="24" Height="24" VerticalAlignment="Top" Padding="0"
+                                    ToolTip="Remover cliente da venda" Click="BtnRemoverCliente_Click"/>
+                            <StackPanel>
+                                <TextBlock x:Name="TxtClienteNome"
+                                           AutomationProperties.AutomationId="TxtClienteSelecionado"
+                                           Foreground="White" FontSize="15" FontWeight="Bold"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock x:Name="TxtClienteCpf" Foreground="#A3BE8C" FontSize="13"
+                                           Margin="0,2,0,0"/>
+                                <TextBlock x:Name="TxtClienteContato" Foreground="#D8DEE9" FontSize="12"
+                                           Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="✎ clique para editar" Foreground="#88C0D0"
+                                           FontSize="11" Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom">
                     <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,0,0,8"/>
-                    <Button x:Name="BtnFinalizar" Content="Finalizar venda" Height="44"
+                    <Button x:Name="BtnFinalizar" Content="Finalizar venda" Margin="0,8,0,0" Height="44"
                             IsEnabled="False" Click="BtnFinalizar_Click"/>
                     <Button x:Name="BtnCancelar" Content="Cancelar venda" Height="32" Margin="0,8,0,0"
                             Click="BtnCancelar_Click"/>
