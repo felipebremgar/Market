@@ -4,6 +4,21 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.3.0] — Feedback ao usuário
+
+### Adicionado
+- Controle único de notificação `NotificationBanner` com variantes Sucesso/Aviso/Erro,
+  ícone e auto-dismiss opcional; tema centralizado em `NotificacaoTema`.
+- Helper `BotaoOcupado`: durante ações assíncronas, o botão é desabilitado e exibe
+  "Processando…/Salvando…/Filtrando…/Gerando…", restaurando ao final.
+
+### Alterado
+- Todas as telas com mensagens (PDV, Cadastro/Manter Mercadorias, Clientes, Histórico,
+  Relatório, janelas de cadastro/edição) passam a usar o `NotificationBanner`, unificando
+  cores e comportamento; removidos os painéis de mensagem ad-hoc de cada view.
+- Botões de finalizar/salvar/filtrar/buscar/gerar exibem estado de processamento.
+- Versão do app para 1.3.0.
+
 ## [1.2.0] — Tela inicial limpa e status do banco
 
 ### Adicionado

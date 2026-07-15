@@ -54,7 +54,9 @@ public partial class PdvView : UserControl
 
         var pagamento = recebimento.Pagamento;
 
+        var conteudoBotao = BtnFinalizar.Content;
         BtnFinalizar.IsEnabled = false;
+        BtnFinalizar.Content = "Processando…";
         try
         {
             var resultado = await _vendas.FinalizarVendaAsync(
@@ -83,6 +85,7 @@ public partial class PdvView : UserControl
         }
         finally
         {
+            BtnFinalizar.Content = conteudoBotao;
             AtualizarCarrinho(); // reavalia o estado do botão
         }
     }
@@ -309,25 +312,11 @@ public partial class PdvView : UserControl
         BtnFinalizar.IsEnabled = !_carrinho.Vazio;
     }
 
-    private static readonly Brush FundoErro = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BF616A"));
-    private static readonly Brush FundoSucesso = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#A3BE8C"));
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 
-    private void MostrarErro(string mensagem) => MostrarMensagem(mensagem, FundoErro);
+    private void MostrarSucesso(string mensagem) => Notificacao.Sucesso(mensagem, autoDismiss: true);
 
-    private void MostrarSucesso(string mensagem) => MostrarMensagem(mensagem, FundoSucesso);
-
-    private void MostrarMensagem(string mensagem, Brush fundo)
-    {
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Background = fundo;
-        PainelMensagem.Visibility = Visibility.Visible;
-    }
-
-    private void LimparMensagem()
-    {
-        TxtMensagem.Text = string.Empty;
-        PainelMensagem.Visibility = Visibility.Collapsed;
-    }
+    private void LimparMensagem() => Notificacao.Limpar();
 
     // ----- Quantidade digitável (edição direta na coluna Qtd) -----
 

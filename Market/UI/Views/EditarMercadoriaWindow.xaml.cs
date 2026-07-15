@@ -3,6 +3,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
 using Market.Domain;
+using Market.UI.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace Market.UI.Views;
@@ -83,29 +84,27 @@ public partial class EditarMercadoriaWindow : Window
                 : null
         };
 
-        BtnSalvar.IsEnabled = false;
         try
         {
-            var resultado = await _servico.AtualizarAsync(_id, dados);
-            if (resultado.Sucesso)
+            await BotaoOcupado.ExecutarAsync(BtnSalvar, "Salvando…", async () =>
             {
-                Salvou = true;
-                DialogResult = true;
-                Close();
-            }
-            else
-            {
-                MostrarErro(resultado.MensagemErro);
-            }
+                var resultado = await _servico.AtualizarAsync(_id, dados);
+                if (resultado.Sucesso)
+                {
+                    Salvou = true;
+                    DialogResult = true;
+                    Close();
+                }
+                else
+                {
+                    MostrarErro(resultado.MensagemErro);
+                }
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro inesperado ao editar mercadoria {Id}.", _id);
             MostrarErro("Ocorreu um erro inesperado ao salvar. Tente novamente.");
-        }
-        finally
-        {
-            BtnSalvar.IsEnabled = true;
         }
     }
 
@@ -121,11 +120,5 @@ public partial class EditarMercadoriaWindow : Window
     private void Inteiro_Pasting(object sender, DataObjectPastingEventArgs e)
         => EntradaNumerica.ColarInteiro(sender, e);
 
-    private void MostrarErro(string mensagem)
-    {
-        PainelMensagem.Background = new SolidColorBrush(Color.FromRgb(0xFD, 0xEC, 0xEA));
-        TxtMensagem.Foreground = new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28));
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Visibility = Visibility.Visible;
-    }
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 }

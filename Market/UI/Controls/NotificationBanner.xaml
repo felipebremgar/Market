@@ -1,0 +1,11 @@
+<UserControl x:Class="Market.UI.Controls.NotificationBanner"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border x:Name="Painel" Padding="10,8" CornerRadius="4">
+        <DockPanel>
+            <TextBlock x:Name="Icone" DockPanel.Dock="Left" FontWeight="Bold"
+                       Margin="0,0,8,0" VerticalAlignment="Top"/>
+            <TextBlock x:Name="Texto" TextWrapping="Wrap"/>
+        </DockPanel>
+    </Border>
+</UserControl>

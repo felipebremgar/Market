@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ctrls="clr-namespace:Market.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="640">
     <UserControl.Resources>
         <Style TargetType="TextBlock" x:Key="Rotulo">
@@ -65,10 +66,7 @@
                         HorizontalAlignment="Left" Width="180"/>
 
             <!-- Mensagens -->
-            <Border x:Name="PainelMensagem" Visibility="Collapsed" Margin="0,18,0,0"
-                    Padding="10,8" CornerRadius="4">
-                <TextBlock x:Name="TxtMensagem" TextWrapping="Wrap"/>
-            </Border>
+            <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,18,0,0"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                 <Button x:Name="BtnSalvar" Content="Salvar" Width="120" Height="38"

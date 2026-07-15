@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
+using Market.UI.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -39,7 +40,8 @@ public partial class ClientesView : UserControl
         }
     }
 
-    private async void BtnBuscar_Click(object sender, RoutedEventArgs e) => await BuscarAsync();
+    private async void BtnBuscar_Click(object sender, RoutedEventArgs e)
+        => await BotaoOcupado.ExecutarAsync(BtnBuscar, "Buscando…", BuscarAsync);
 
     private async void Busca_KeyDown(object sender, KeyEventArgs e)
     {
@@ -65,17 +67,7 @@ public partial class ClientesView : UserControl
 
     private static string? Nulo(string texto) => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
 
-    private void MostrarErro(string mensagem)
-    {
-        PainelMensagem.Background = new SolidColorBrush(Color.FromRgb(0xFD, 0xEC, 0xEA));
-        TxtMensagem.Foreground = new SolidColorBrush(Color.FromRgb(0xC6, 0x28, 0x28));
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Visibility = Visibility.Visible;
-    }
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 
-    private void LimparMensagem()
-    {
-        TxtMensagem.Text = string.Empty;
-        PainelMensagem.Visibility = Visibility.Collapsed;
-    }
+    private void LimparMensagem() => Notificacao.Limpar();
 }

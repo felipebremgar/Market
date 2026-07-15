@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Market.Application.Services;
+using Market.UI.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace Market.UI.Views;
@@ -41,7 +42,8 @@ public partial class RelatorioLucroView : UserControl
         }
     }
 
-    private async void BtnGerar_Click(object sender, RoutedEventArgs e) => await GerarAsync();
+    private async void BtnGerar_Click(object sender, RoutedEventArgs e)
+        => await BotaoOcupado.ExecutarAsync(BtnGerar, "Gerando…", GerarAsync);
 
     private async void BtnLimpar_Click(object sender, RoutedEventArgs e)
     {

@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctrls="clr-namespace:Market.UI.Controls"
         mc:Ignorable="d"
         Title="Editar Mercadoria" Height="560" Width="460"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
@@ -70,10 +71,7 @@
 
                 <TextBlock x:Name="TxtCadastro" Foreground="Gray" FontSize="12" Margin="0,14,0,0"/>
 
-                <Border x:Name="PainelMensagem" Visibility="Collapsed" Margin="0,14,0,0"
-                        Padding="10,8" CornerRadius="4">
-                    <TextBlock x:Name="TxtMensagem" TextWrapping="Wrap"/>
-                </Border>
+                <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,14,0,0"/>
             </StackPanel>
         </ScrollViewer>
 

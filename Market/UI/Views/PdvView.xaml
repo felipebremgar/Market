@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ctrls="clr-namespace:Market.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="560">
     <Grid Margin="16">
         <Grid.ColumnDefinitions>
@@ -96,10 +97,7 @@
                 </StackPanel>
 
                 <StackPanel DockPanel.Dock="Bottom">
-                    <Border x:Name="PainelMensagem" Visibility="Collapsed" Margin="0,0,0,8"
-                            Padding="8,6" CornerRadius="4">
-                        <TextBlock x:Name="TxtMensagem" Foreground="White" TextWrapping="Wrap"/>
-                    </Border>
+                    <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,0,0,8"/>
                     <Button x:Name="BtnFinalizar" Content="Finalizar venda" Height="44"
                             IsEnabled="False" Click="BtnFinalizar_Click"/>
                     <Button x:Name="BtnCancelar" Content="Cancelar venda" Height="32" Margin="0,8,0,0"

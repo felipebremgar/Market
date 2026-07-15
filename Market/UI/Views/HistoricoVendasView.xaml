@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ctrls="clr-namespace:Market.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="560">
     <DockPanel Margin="16">
         <TextBlock DockPanel.Dock="Top" Text="Histórico de Vendas" FontSize="22" FontWeight="Bold"/>
@@ -37,10 +38,7 @@
             </StackPanel>
         </Border>
 
-        <Border DockPanel.Dock="Top" x:Name="PainelMensagem" Visibility="Collapsed"
-                Margin="0,0,0,8" Padding="10,6" CornerRadius="4" Background="#FDECEA">
-            <TextBlock x:Name="TxtMensagem" Foreground="#C62828" TextWrapping="Wrap"/>
-        </Border>
+        <ctrls:NotificationBanner DockPanel.Dock="Top" x:Name="Notificacao" Margin="0,0,0,8"/>
 
         <!-- Master-detail -->
         <Grid>

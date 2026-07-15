@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
 using Market.Domain;
+using Market.UI.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -89,22 +90,25 @@ public partial class ManterMercadoriasView : UserControl
         if (confirmacao != MessageBoxResult.Yes)
             return;
 
-        var resultado = await _servico.ExcluirAsync(linha.Id);
-        if (resultado.Sucesso)
+        await BotaoOcupado.ExecutarAsync(BtnExcluir, "Excluindo…", async () =>
         {
-            await CarregarAsync(_filtroAtual);
-            MostrarAviso($"\"{linha.Nome}\" foi excluída.");
-        }
-        else
-        {
-            MostrarErro(resultado.MensagemErro);
-        }
+            var resultado = await _servico.ExcluirAsync(linha.Id);
+            if (resultado.Sucesso)
+            {
+                await CarregarAsync(_filtroAtual);
+                MostrarAviso($"\"{linha.Nome}\" foi excluída.");
+            }
+            else
+            {
+                MostrarErro(resultado.MensagemErro);
+            }
+        });
     }
 
     // ----- Filtros -----
 
     private async void BtnFiltrar_Click(object sender, RoutedEventArgs e)
-        => await CarregarAsync(ConstruirFiltro());
+        => await BotaoOcupado.ExecutarAsync(BtnFiltrar, "Filtrando…", () => CarregarAsync(ConstruirFiltro()));
 
     private async void BtnLimparFiltros_Click(object sender, System.Windows.RoutedEventArgs e)
     {
@@ -192,23 +196,9 @@ public partial class ManterMercadoriasView : UserControl
         FiltroCodigoBarras.SelectAll();
     }
 
-    private void MostrarErro(string mensagem)
-        => Mensagem(mensagem, Color.FromRgb(0xFD, 0xEC, 0xEA), Color.FromRgb(0xC6, 0x28, 0x28));
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 
-    private void MostrarAviso(string mensagem)
-        => Mensagem(mensagem, Color.FromRgb(0xFF, 0xF4, 0xE5), Color.FromRgb(0xE6, 0x51, 0x00));
+    private void MostrarAviso(string mensagem) => Notificacao.Aviso(mensagem, autoDismiss: true);
 
-    private void Mensagem(string mensagem, Color fundo, Color texto)
-    {
-        PainelMensagem.Background = new SolidColorBrush(fundo);
-        TxtMensagem.Foreground = new SolidColorBrush(texto);
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Visibility = System.Windows.Visibility.Visible;
-    }
-
-    private void LimparMensagem()
-    {
-        TxtMensagem.Text = string.Empty;
-        PainelMensagem.Visibility = System.Windows.Visibility.Collapsed;
-    }
+    private void LimparMensagem() => Notificacao.Limpar();
 }

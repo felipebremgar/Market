@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Market.Application.Services;
 using Market.Domain;
+using Market.UI.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace Market.UI.Views;
@@ -65,7 +66,7 @@ public partial class HistoricoVendasView : UserControl
     }
 
     private async void BtnFiltrar_Click(object sender, RoutedEventArgs e)
-        => await CarregarAsync(ConstruirFiltro());
+        => await BotaoOcupado.ExecutarAsync(BtnFiltrar, "Filtrando…", () => CarregarAsync(ConstruirFiltro()));
 
     private async void Filtro_KeyDown(object sender, KeyEventArgs e)
     {
@@ -92,15 +93,7 @@ public partial class HistoricoVendasView : UserControl
 
     private static string? Normalizar(string texto) => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
 
-    private void MostrarErro(string mensagem)
-    {
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Visibility = Visibility.Visible;
-    }
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 
-    private void LimparMensagem()
-    {
-        TxtMensagem.Text = string.Empty;
-        PainelMensagem.Visibility = Visibility.Collapsed;
-    }
+    private void LimparMensagem() => Notificacao.Limpar();
 }

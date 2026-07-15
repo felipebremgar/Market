@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
 using Market.Domain.Repositories;
+using Market.UI.Controls;
 using Microsoft.Extensions.Logging;
 
 namespace Market.UI.Views;
@@ -117,28 +118,26 @@ public partial class CadastroMercadoriaView : UserControl
                 : null
         };
 
-        BtnSalvar.IsEnabled = false;
         try
         {
-            var resultado = await _servico.CadastrarAsync(dados);
-            if (resultado.Sucesso)
+            await BotaoOcupado.ExecutarAsync(BtnSalvar, "Salvando…", async () =>
             {
-                MostrarSucesso("Mercadoria cadastrada com sucesso.");
-                LimparCampos();
-            }
-            else
-            {
-                MostrarErro(resultado.MensagemErro);
-            }
+                var resultado = await _servico.CadastrarAsync(dados);
+                if (resultado.Sucesso)
+                {
+                    MostrarSucesso("Mercadoria cadastrada com sucesso.");
+                    LimparCampos();
+                }
+                else
+                {
+                    MostrarErro(resultado.MensagemErro);
+                }
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro inesperado ao cadastrar mercadoria.");
             MostrarErro("Ocorreu um erro inesperado ao salvar. Tente novamente.");
-        }
-        finally
-        {
-            BtnSalvar.IsEnabled = true;
         }
     }
 
@@ -163,26 +162,11 @@ public partial class CadastroMercadoriaView : UserControl
         TxtCodigoBarras.Focus();
     }
 
-    private void MostrarSucesso(string mensagem)
-        => Mensagem(mensagem, Color.FromRgb(0xE7, 0xF5, 0xE9), Color.FromRgb(0x2E, 0x7D, 0x32));
+    private void MostrarSucesso(string mensagem) => Notificacao.Sucesso(mensagem, autoDismiss: true);
 
-    private void MostrarErro(string mensagem)
-        => Mensagem(mensagem, Color.FromRgb(0xFD, 0xEC, 0xEA), Color.FromRgb(0xC6, 0x28, 0x28));
+    private void MostrarErro(string mensagem) => Notificacao.Erro(mensagem);
 
-    private void MostrarAviso(string mensagem)
-        => Mensagem(mensagem, Color.FromRgb(0xFF, 0xF4, 0xE5), Color.FromRgb(0xE6, 0x51, 0x00));
+    private void MostrarAviso(string mensagem) => Notificacao.Aviso(mensagem);
 
-    private void Mensagem(string mensagem, Color fundo, Color texto)
-    {
-        PainelMensagem.Background = new SolidColorBrush(fundo);
-        TxtMensagem.Foreground = new SolidColorBrush(texto);
-        TxtMensagem.Text = mensagem;
-        PainelMensagem.Visibility = System.Windows.Visibility.Visible;
-    }
-
-    private void LimparMensagem()
-    {
-        TxtMensagem.Text = string.Empty;
-        PainelMensagem.Visibility = System.Windows.Visibility.Collapsed;
-    }
+    private void LimparMensagem() => Notificacao.Limpar();
 }
