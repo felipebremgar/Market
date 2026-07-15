@@ -34,10 +34,11 @@ CREATE INDEX IX_Mercadoria_Validade   ON Mercadoria (Validade);
 
 -- ---------- Venda (cliente opcional) ----------
 CREATE TABLE Venda (
-    Id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    DataVenda    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now','localtime')),
-    ValorTotal   INTEGER NOT NULL DEFAULT 0,
-    ClienteCpf   TEXT    NULL,
+    Id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    DataVenda      TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now','localtime')),
+    ValorTotal     INTEGER NOT NULL DEFAULT 0,
+    ClienteCpf     TEXT    NULL,
+    FormaPagamento TEXT    NULL,
     CHECK (ValorTotal >= 0),
     FOREIGN KEY (ClienteCpf) REFERENCES Cliente (Cpf)
         ON UPDATE CASCADE ON DELETE SET NULL
@@ -65,4 +66,4 @@ CREATE INDEX IX_ItemVenda_MercadoriaId ON ItemVenda (MercadoriaId);
 -- Bancos novos já nascem na versão de schema mais recente; o MigrationRunner só
 -- precisa atuar sobre bancos criados antes de uma migração. Mantenha este valor
 -- igual a SchemaMigrations.VersaoAlvo.
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;

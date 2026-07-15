@@ -1,6 +1,7 @@
 using Market.Application.Services;
 using Market.Domain;
 using Market.Tests.Infra;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Market.Tests.Application;
 
@@ -111,5 +112,20 @@ public class HistoricoServiceTests
 
         Assert.Null(vendas[0].ClienteNome);
         Assert.Equal("—", vendas[0].ClienteTexto);
+    }
+
+    // v1.7 — a forma de pagamento persistida flui até o resumo do histórico
+    [Fact]
+    public async Task Resumo_traz_a_forma_de_pagamento()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(precoVenda: 100);
+        await new VendaService(banco, NullLogger<VendaService>.Instance)
+            .FinalizarVendaAsync(null, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Pix);
+
+        var vendas = await CriarServico(banco).BuscarVendasAsync(FiltroVenda.Nenhum);
+
+        Assert.Equal(FormaPagamento.Pix, vendas[0].Forma);
+        Assert.Equal("Pix", vendas[0].FormaTexto);
     }
 }

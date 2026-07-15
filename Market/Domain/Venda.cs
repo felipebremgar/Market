@@ -14,5 +14,8 @@ public class Venda
     public string? ClienteCpf { get; set; }
     public Cliente? Cliente { get; set; }
 
+    // Forma de pagamento (nula em vendas anteriores à v1.7).
+    public FormaPagamento? Forma { get; set; }
+
     public ICollection<ItemVenda> Itens { get; set; } = new List<ItemVenda>();
 }

@@ -15,6 +15,11 @@ public class VendaConfiguration : IEntityTypeConfiguration<Venda>
 
         builder.Property(v => v.ValorTotal).IsRequired();
 
+        // Enum gravado como texto (nome) na coluna FormaPagamento; nulo em vendas antigas.
+        builder.Property(v => v.Forma)
+            .HasColumnName("FormaPagamento")
+            .HasConversion<string>();
+
         builder.Property(v => v.DataVenda)
             .HasConversion(ValueConverters.IsoDateTime)
             .HasDefaultValueSql("strftime('%Y-%m-%dT%H:%M:%S','now','localtime')")

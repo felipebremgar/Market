@@ -45,6 +45,7 @@ public class VendaService
 
     public async Task<ResultadoOperacao> FinalizarVendaAsync(
         string? clienteCpf, IReadOnlyList<ItemCarrinho> itens,
+        FormaPagamento forma = FormaPagamento.Dinheiro,
         CancellationToken cancellationToken = default)
     {
         if (itens is null || itens.Count == 0)
@@ -62,7 +63,7 @@ public class VendaService
                 !await context.Clientes.AnyAsync(c => c.Cpf == cpf, cancellationToken))
                 return ResultadoOperacao.Falha("Cliente não encontrado.");
 
-            var venda = new Venda { DataVenda = DateTime.Now, ClienteCpf = cpf, ValorTotal = 0 };
+            var venda = new Venda { DataVenda = DateTime.Now, ClienteCpf = cpf, ValorTotal = 0, Forma = forma };
             context.Vendas.Add(venda);
             await context.SaveChangesAsync(cancellationToken); // gera o Id da venda
 

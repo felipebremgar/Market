@@ -1,4 +1,5 @@
 using Market.Application.Services;
+using Market.Domain;
 using Market.Infrastructure.Data;
 using Market.Tests.Infra;
 using Microsoft.EntityFrameworkCore;
@@ -157,6 +158,28 @@ public class VendaServiceTests
         Assert.True(resultado.Sucesso);
         using var context = banco.CreateDbContext();
         Assert.Equal(CpfValido, context.Vendas.Single().ClienteCpf);
+    }
+
+    [Fact]
+    public async Task Venda_persiste_a_forma_de_pagamento()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 100);
+        await CriarServico(banco).FinalizarVendaAsync(null, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Pix);
+
+        using var context = banco.CreateDbContext();
+        Assert.Equal(FormaPagamento.Pix, context.Vendas.Single().Forma);
+    }
+
+    [Fact]
+    public async Task Forma_padrao_e_dinheiro()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 100);
+        await CriarServico(banco).FinalizarVendaAsync(null, new[] { new ItemCarrinho(m.Id, 1) });
+
+        using var context = banco.CreateDbContext();
+        Assert.Equal(FormaPagamento.Dinheiro, context.Vendas.Single().Forma);
     }
 
     // T20 — duas linhas do mesmo produto excedendo o estoque somado

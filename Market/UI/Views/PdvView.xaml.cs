@@ -60,7 +60,7 @@ public partial class PdvView : UserControl
         try
         {
             var resultado = await _vendas.FinalizarVendaAsync(
-                ClienteCpfSelecionado, _carrinho.ParaItensCarrinho());
+                ClienteCpfSelecionado, _carrinho.ParaItensCarrinho(), pagamento.Forma);
 
             if (!resultado.Sucesso)
             {

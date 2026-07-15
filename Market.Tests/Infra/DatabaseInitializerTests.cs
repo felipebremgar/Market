@@ -58,14 +58,16 @@ public class DatabaseInitializerTests
                 conn.Open();
                 var schema = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "schema.sql"));
                 Executar(conn, schema);
+                // Remove as colunas adicionadas por migrações posteriores, voltando ao estado v1.
                 Executar(conn,
                     "ALTER TABLE Cliente DROP COLUMN Contato;" +
+                    "ALTER TABLE Venda DROP COLUMN FormaPagamento;" +
                     "INSERT INTO Cliente (Cpf, Nome) VALUES ('52998224725','Ana');" +
                     "PRAGMA user_version = 1;");
             }
             SqliteConnection.ClearAllPools();
 
-            // Roda o Initialize real: como o schema já existe, apenas aplica a migração.
+            // Roda o Initialize real: como o schema já existe, apenas aplica as migrações.
             Criar(dbPath).Initialize();
 
             using (var conn = new SqliteConnection(cs))
@@ -74,6 +76,8 @@ public class DatabaseInitializerTests
                 Assert.Equal(SchemaMigrations.VersaoAlvo, MigrationRunner.LerUserVersion(conn));
                 Assert.Equal(1, Escalar(conn,
                     "SELECT COUNT(*) FROM pragma_table_info('Cliente') WHERE name='Contato';"));
+                Assert.Equal(1, Escalar(conn,
+                    "SELECT COUNT(*) FROM pragma_table_info('Venda') WHERE name='FormaPagamento';"));
                 Assert.Equal("Ana", Escalar(conn, "SELECT Nome FROM Cliente WHERE Cpf='52998224725';"));
             }
         }

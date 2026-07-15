@@ -4,6 +4,19 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.7.0] — Forma de pagamento na venda
+
+### Adicionado
+- Forma de pagamento (Dinheiro/Cartão/Pix) persistida na venda e exibida como coluna
+  "Pagamento" no histórico.
+- Migração de schema #3 (`ALTER TABLE Venda ADD COLUMN FormaPagamento`).
+
+### Alterado
+- Enum `FormaPagamento` movido para o Domain (com extensão de texto reutilizável);
+  `VendaService.FinalizarVendaAsync` passa a receber e gravar a forma.
+- `schema.sql` cria `Venda.FormaPagamento` e carimba `user_version = 3`.
+- Versão do app para 1.7.0.
+
 ## [1.6.0] — Cadastro de mercadorias inteligente
 
 ### Adicionado

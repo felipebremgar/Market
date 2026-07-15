@@ -60,6 +60,7 @@
                         <DataGridTextColumn Header="Nº" Binding="{Binding Id}" Width="Auto"/>
                         <DataGridTextColumn Header="Data" Binding="{Binding DataTexto}" Width="Auto"/>
                         <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteTexto}" Width="*"/>
+                        <DataGridTextColumn Header="Pagamento" Binding="{Binding FormaTexto}" Width="Auto"/>
                         <DataGridTextColumn Header="Total" Binding="{Binding TotalTexto}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>

@@ -25,6 +25,10 @@ public static class SchemaMigrations
         // v1.5 — Contato opcional (telefone ou e-mail) no cliente.
         new Migration(2, "Adiciona coluna Contato em Cliente",
             "ALTER TABLE Cliente ADD COLUMN Contato TEXT NULL;"),
+
+        // v1.7 — Forma de pagamento gravada na venda.
+        new Migration(3, "Adiciona coluna FormaPagamento em Venda",
+            "ALTER TABLE Venda ADD COLUMN FormaPagamento TEXT NULL;"),
     };
 
     /// <summary>Maior número de migração conhecido — o alvo para o qual todo banco deve convergir.</summary>

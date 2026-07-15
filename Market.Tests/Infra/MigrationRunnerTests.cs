@@ -62,14 +62,15 @@ public class MigrationRunnerTests
     }
 
     [Fact]
-    public void Migracoes_reais_elevam_banco_v1_ate_o_alvo_adicionando_Contato()
+    public void Migracoes_reais_elevam_banco_v1_ate_o_alvo()
     {
         using var connection = AbrirBancoEmMemoria();
-        // Simula um banco criado antes da v1.5 (Cliente sem a coluna Contato), na versão 1.
+        // Simula um banco na versão 1 (tabelas-base sem as colunas adicionadas depois).
         using (var cmd = connection.CreateCommand())
         {
             cmd.CommandText =
                 "CREATE TABLE Cliente (Cpf TEXT PRIMARY KEY, Nome TEXT NOT NULL);" +
+                "CREATE TABLE Venda (Id INTEGER PRIMARY KEY, ValorTotal INTEGER);" +
                 "PRAGMA user_version = 1;";
             cmd.ExecuteNonQuery();
         }
@@ -77,7 +78,8 @@ public class MigrationRunnerTests
         var versaoFinal = CriarRunner().Aplicar(connection); // migrações reais
 
         Assert.Equal(SchemaMigrations.VersaoAlvo, versaoFinal);
-        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));
+        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));       // migração 2
+        Assert.True(ColunaExiste(connection, "Venda", "FormaPagamento"));  // migração 3
     }
 
     private static bool ColunaExiste(SqliteConnection connection, string tabela, string coluna)
