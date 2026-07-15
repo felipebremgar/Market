@@ -8,7 +8,7 @@
     <UserControl.Resources>
         <Style TargetType="TextBlock" x:Key="Rotulo">
             <Setter Property="Margin" Value="0,10,0,3"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="#4C566A"/>
         </Style>
         <Style TargetType="TextBox">

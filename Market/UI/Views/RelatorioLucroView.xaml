@@ -19,11 +19,11 @@
         <Border DockPanel.Dock="Top" Background="#F5F6F8" CornerRadius="4" Padding="12" Margin="0,10,0,10">
             <StackPanel Orientation="Horizontal">
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Data inicial" FontSize="12" Foreground="#4C566A"/>
+                    <TextBlock Text="Data inicial" FontSize="13" Foreground="#4C566A"/>
                     <DatePicker x:Name="DataIni" Width="150"/>
                 </StackPanel>
                 <StackPanel Margin="0,0,12,0">
-                    <TextBlock Text="Data final" FontSize="12" Foreground="#4C566A"/>
+                    <TextBlock Text="Data final" FontSize="13" Foreground="#4C566A"/>
                     <DatePicker x:Name="DataFim" Width="150"/>
                 </StackPanel>
                 <Button x:Name="BtnGerar" Content="Gerar relatório" Width="140" Height="32"
@@ -74,6 +74,7 @@
             <DockPanel Grid.Column="0">
                 <TextBlock DockPanel.Dock="Top" Text="Por produto (maior lucro primeiro)"
                            FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid>
                 <DataGrid x:Name="GridProduto" AutomationProperties.AutomationId="GridProduto"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
@@ -85,10 +86,14 @@
                         <DataGridTextColumn Header="Lucro" Binding="{Binding LucroTexto}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock Style="{StaticResource EmptyState}" Text="Sem vendas no período."
+                           Visibility="{Binding HasItems, ElementName=GridProduto, Converter={StaticResource BoolInverteVis}}"/>
+                </Grid>
             </DockPanel>
 
             <DockPanel Grid.Column="2">
                 <TextBlock DockPanel.Dock="Top" Text="Por dia" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid>
                 <DataGrid x:Name="GridDia" AutomationProperties.AutomationId="GridDia"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
@@ -99,6 +104,9 @@
                         <DataGridTextColumn Header="Lucro" Binding="{Binding LucroTexto}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock Style="{StaticResource EmptyState}" Text="Sem vendas no período."
+                           Visibility="{Binding HasItems, ElementName=GridDia, Converter={StaticResource BoolInverteVis}}"/>
+                </Grid>
             </DockPanel>
         </Grid>
     </DockPanel>

@@ -17,41 +17,41 @@
             <StackPanel>
                 <UniformGrid Columns="4">
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Nome" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Nome" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroNome" KeyDown="Filtro_KeyDown"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Fornecedor" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Fornecedor" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroFornecedor" KeyDown="Filtro_KeyDown"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Código de barras (bipe aqui)" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Código de barras (bipe aqui)" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroCodigoBarras" KeyDown="FiltroCodigoBarras_KeyDown"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Quantidade mínima" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Quantidade mínima" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroQtdMin" KeyDown="Filtro_KeyDown"
                                  PreviewTextInput="Inteiro_PreviewTextInput"
                                  DataObject.Pasting="Inteiro_Pasting"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Preço venda mín (R$)" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Preço venda mín (R$)" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroPrecoMin" KeyDown="Filtro_KeyDown"
                                  PreviewTextInput="Decimal_PreviewTextInput"
                                  DataObject.Pasting="Decimal_Pasting"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Preço venda máx (R$)" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Preço venda máx (R$)" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroPrecoMax" KeyDown="Filtro_KeyDown"
                                  PreviewTextInput="Decimal_PreviewTextInput"
                                  DataObject.Pasting="Decimal_Pasting"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Validade de" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Validade de" FontSize="13" Foreground="#4C566A"/>
                         <DatePicker x:Name="FiltroValidadeIni"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,8">
-                        <TextBlock Text="Validade até" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Validade até" FontSize="13" Foreground="#4C566A"/>
                         <DatePicker x:Name="FiltroValidadeFim"/>
                     </StackPanel>
                 </UniformGrid>
@@ -89,11 +89,19 @@
             </Border>
         </StackPanel>
 
+        <Grid>
         <DataGrid x:Name="Grid" AutomationProperties.AutomationId="GridMercadorias"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" SelectionMode="Single"
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal"
-                  RowHeaderWidth="0" MouseDoubleClick="Grid_MouseDoubleClick">
+                  RowHeaderWidth="0" MouseDoubleClick="Grid_MouseDoubleClick"
+                  PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Editar" Click="BtnEditar_Click"/>
+                    <MenuItem Header="Excluir" Click="BtnExcluir_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
                     <!-- Precedência: o último trigger verdadeiro vence (estoque < vence < vencida). -->
@@ -121,5 +129,8 @@
                 <DataGridTextColumn Header="Cadastro" Binding="{Binding DataCadastroTexto}" Width="Auto"/>
             </DataGrid.Columns>
         </DataGrid>
+        <TextBlock Style="{StaticResource EmptyState}" Text="Nenhuma mercadoria encontrada."
+                   Visibility="{Binding HasItems, ElementName=Grid, Converter={StaticResource BoolInverteVis}}"/>
+        </Grid>
     </DockPanel>
 </UserControl>

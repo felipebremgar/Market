@@ -12,15 +12,21 @@ public partial class MainWindow : Window
 {
     private readonly IServiceProvider _services;
     private readonly DatabaseInitializer _databaseInitializer;
+    private readonly List<Button> _navButtons;
 
     public MainWindow(IServiceProvider services, DatabaseInitializer databaseInitializer)
     {
         InitializeComponent();
         _services = services;
         _databaseInitializer = databaseInitializer;
+        _navButtons = new List<Button>
+        {
+            BtnInicio, BtnCadastroMercadoria, BtnManterMercadorias,
+            BtnClientes, BtnPdv, BtnHistorico, BtnRelatorio
+        };
         VersaoText.Text = AppInfo.VersaoCurta;
         AtualizarStatusBanco();
-        Navegar<HomeView>();
+        Navegar<HomeView>(BtnInicio);
     }
 
     private void AtualizarStatusBanco()
@@ -32,26 +38,31 @@ public partial class MainWindow : Window
         StatusBancoText.Text = conectado ? "Banco conectado" : "Banco indisponível";
     }
 
-    private void Navegar<TView>() where TView : UserControl
-        => ContentArea.Content = _services.GetRequiredService<TView>();
+    private void Navegar<TView>(Button ativo) where TView : UserControl
+    {
+        ContentArea.Content = _services.GetRequiredService<TView>();
+        // Marca o botão da tela atual (o template destaca quem tiver Tag="ativa").
+        foreach (var botao in _navButtons)
+            botao.Tag = ReferenceEquals(botao, ativo) ? "ativa" : null;
+    }
 
-    private void BtnInicio_Click(object sender, RoutedEventArgs e) => Navegar<HomeView>();
+    private void BtnInicio_Click(object sender, RoutedEventArgs e) => Navegar<HomeView>(BtnInicio);
 
     private void BtnCadastroMercadoria_Click(object sender, RoutedEventArgs e)
-        => Navegar<CadastroMercadoriaView>();
+        => Navegar<CadastroMercadoriaView>(BtnCadastroMercadoria);
 
     private void BtnManterMercadorias_Click(object sender, RoutedEventArgs e)
-        => Navegar<ManterMercadoriasView>();
+        => Navegar<ManterMercadoriasView>(BtnManterMercadorias);
 
     private void BtnClientes_Click(object sender, RoutedEventArgs e)
-        => Navegar<ClientesView>();
+        => Navegar<ClientesView>(BtnClientes);
 
     private void BtnPdv_Click(object sender, RoutedEventArgs e)
-        => Navegar<PdvView>();
+        => Navegar<PdvView>(BtnPdv);
 
     private void BtnHistorico_Click(object sender, RoutedEventArgs e)
-        => Navegar<HistoricoVendasView>();
+        => Navegar<HistoricoVendasView>(BtnHistorico);
 
     private void BtnRelatorio_Click(object sender, RoutedEventArgs e)
-        => Navegar<RelatorioLucroView>();
+        => Navegar<RelatorioLucroView>(BtnRelatorio);
 }

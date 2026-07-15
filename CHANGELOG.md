@@ -4,6 +4,21 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.4.0] — Polimento de UX
+
+### Adicionado
+- Menu lateral: hover mais visível (fundo + barra de destaque + negrito) e
+  indicação da tela ativa (barra ciano + fundo destacado).
+- Empty states nos grids vazios (mercadorias, clientes, vendas, itens, relatório),
+  via conversor `InverseBooleanToVisibilityConverter` e estilo `EmptyState`.
+- Menu de contexto (botão direito) com Editar/Excluir em Manter Mercadorias,
+  selecionando a linha sob o cursor.
+
+### Alterado
+- Fonte e altura de linha das tabelas maiores (estilo global de `DataGrid`) e
+  labels de formulário/filtro aumentadas, para leitura rápida no caixa.
+- Versão do app para 1.4.0.
+
 ## [1.3.0] — Feedback ao usuário
 
 ### Adicionado

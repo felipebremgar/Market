@@ -10,23 +10,41 @@
     <Window.Resources>
         <Style TargetType="Button" x:Key="NavButton">
             <Setter Property="Height" Value="44"/>
-            <Setter Property="Margin" Value="8,2"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="#ECEFF4"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#D8DEE9"/>
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3B4252"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#6B7280"/>
-                    <Setter Property="Cursor" Value="Arrow"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="Transparent" Margin="8,2" CornerRadius="6">
+                            <Grid>
+                                <Border x:Name="Accent" Width="4" HorizontalAlignment="Left"
+                                        Background="Transparent" CornerRadius="6,0,0,6"/>
+                                <ContentPresenter x:Name="Cp" HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center" Margin="16,0,12,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#3B4252"/>
+                                <Setter TargetName="Accent" Property="Background" Value="#616E88"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="ativa">
+                                <Setter TargetName="Bd" Property="Background" Value="#434C5E"/>
+                                <Setter TargetName="Accent" Property="Background" Value="#88C0D0"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#6B7280"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 

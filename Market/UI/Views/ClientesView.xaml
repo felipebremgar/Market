@@ -19,11 +19,11 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="CPF" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="CPF" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="BuscaCpf" KeyDown="Busca_KeyDown"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Nome" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Nome" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="BuscaNome" KeyDown="Busca_KeyDown"/>
                     </StackPanel>
                 </Grid>
@@ -39,6 +39,7 @@
 
         <ctrls:NotificationBanner DockPanel.Dock="Top" x:Name="Notificacao" Margin="0,0,0,8"/>
 
+        <Grid>
         <DataGrid x:Name="Grid" AutomationProperties.AutomationId="GridClientes"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" SelectionMode="Single"
@@ -48,5 +49,8 @@
                 <DataGridTextColumn Header="Nome" Binding="{Binding Nome}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
+        <TextBlock Style="{StaticResource EmptyState}" Text="Nenhum cliente encontrado."
+                   Visibility="{Binding HasItems, ElementName=Grid, Converter={StaticResource BoolInverteVis}}"/>
+        </Grid>
     </DockPanel>
 </UserControl>

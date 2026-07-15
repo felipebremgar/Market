@@ -59,6 +59,16 @@ public partial class ManterMercadoriasView : UserControl
 
     private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e) => EditarSelecionada();
 
+    private void Grid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Seleciona a linha sob o cursor para o menu de contexto agir sobre ela.
+        var origem = e.OriginalSource as DependencyObject;
+        while (origem is not null and not DataGridRow)
+            origem = VisualTreeHelper.GetParent(origem);
+        if (origem is DataGridRow linha)
+            linha.IsSelected = true;
+    }
+
     private void EditarSelecionada()
     {
         if (Grid.SelectedItem is not MercadoriaLinha linha)

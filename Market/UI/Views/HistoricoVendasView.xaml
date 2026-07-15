@@ -14,19 +14,19 @@
             <StackPanel>
                 <UniformGrid Columns="4">
                     <StackPanel Margin="0,0,10,0">
-                        <TextBlock Text="Data inicial" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Data inicial" FontSize="13" Foreground="#4C566A"/>
                         <DatePicker x:Name="FiltroDataIni"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,0">
-                        <TextBlock Text="Data final" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Data final" FontSize="13" Foreground="#4C566A"/>
                         <DatePicker x:Name="FiltroDataFim"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,0">
-                        <TextBlock Text="CPF do cliente" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="CPF do cliente" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroCliente" KeyDown="Filtro_KeyDown"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,10,0">
-                        <TextBlock Text="Produto" FontSize="12" Foreground="#4C566A"/>
+                        <TextBlock Text="Produto" FontSize="13" Foreground="#4C566A"/>
                         <TextBox x:Name="FiltroProduto" KeyDown="Filtro_KeyDown"/>
                     </StackPanel>
                 </UniformGrid>
@@ -50,6 +50,7 @@
 
             <DockPanel Grid.Column="0">
                 <TextBlock DockPanel.Dock="Top" Text="Vendas" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid>
                 <DataGrid x:Name="GridVendas" AutomationProperties.AutomationId="GridVendas"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           SelectionMode="Single" HeadersVisibility="Column"
@@ -62,11 +63,15 @@
                         <DataGridTextColumn Header="Total" Binding="{Binding TotalTexto}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock Style="{StaticResource EmptyState}" Text="Nenhuma venda no período."
+                           Visibility="{Binding HasItems, ElementName=GridVendas, Converter={StaticResource BoolInverteVis}}"/>
+                </Grid>
             </DockPanel>
 
             <DockPanel Grid.Column="2">
                 <TextBlock DockPanel.Dock="Top" x:Name="TxtDetalheCabecalho"
                            Text="Itens da venda" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid>
                 <DataGrid x:Name="GridItens" AutomationProperties.AutomationId="GridItensVenda"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
@@ -77,6 +82,9 @@
                         <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock Style="{StaticResource EmptyState}" Text="Selecione uma venda para ver os itens."
+                           Visibility="{Binding HasItems, ElementName=GridItens, Converter={StaticResource BoolInverteVis}}"/>
+                </Grid>
             </DockPanel>
         </Grid>
     </DockPanel>
