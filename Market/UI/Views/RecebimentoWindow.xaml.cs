@@ -19,31 +19,53 @@ public partial class RecebimentoWindow : Window
     /// <summary>Preenchido ao confirmar. Nulo enquanto a janela não é confirmada.</summary>
     public InfoPagamento? Pagamento { get; private set; }
 
-    public RecebimentoWindow(int totalCentavos)
+    public RecebimentoWindow(int totalCentavos, bool permiteFiado = true)
     {
         InitializeComponent();
         _totalCentavos = totalCentavos;
         TxtTotal.Text = Moeda.ParaTexto(totalCentavos);
 
+        OpFiado.IsEnabled = permiteFiado;
+        if (!permiteFiado)
+            OpFiado.ToolTip = "Selecione um cliente para vender fiado.";
+        DtVencimento.DisplayDateStart = DateTime.Today;   // sem vencimento no passado
+        DtVencimento.SelectedDate = DateTime.Today.AddDays(30);
+
         // Seleção padrão definida após InitializeComponent: garante que todos os
-        // elementos referenciados por Forma_Changed/AtualizarTroco já existem.
+        // elementos referenciados por Forma_Changed/AtualizarEstado já existem.
         OpDinheiro.IsChecked = true;
 
         Loaded += (_, _) =>
         {
-            AtualizarTroco();
+            AtualizarEstado();
             TxtValorPago.Focus();
         };
     }
 
     private bool EhDinheiro => OpDinheiro.IsChecked == true;
+    private bool EhFiado => OpFiado.IsChecked == true;
 
     private void Forma_Changed(object sender, RoutedEventArgs e)
     {
-        // Cartão/Pix: pagamento exato, sem troco e sem campo de valor recebido.
+        // Dinheiro: mostra valor recebido/troco. Fiado: mostra vencimento, sem troco.
         PainelValorPago.Visibility = EhDinheiro ? Visibility.Visible : Visibility.Collapsed;
-        AtualizarTroco();
+        PainelFiado.Visibility = EhFiado ? Visibility.Visible : Visibility.Collapsed;
+        PainelTroco.Visibility = EhFiado ? Visibility.Collapsed : Visibility.Visible;
+        AtualizarEstado();
         if (EhDinheiro) TxtValorPago.Focus();
+    }
+
+    private void DtVencimento_Changed(object sender, SelectionChangedEventArgs e) => AtualizarEstado();
+
+    /// <summary>Fiado depende de um vencimento válido; as demais formas, do troco.</summary>
+    private void AtualizarEstado()
+    {
+        if (EhFiado)
+        {
+            BtnConfirmar.IsEnabled = DtVencimento.SelectedDate is DateTime d && d.Date >= DateTime.Today;
+            return;
+        }
+        AtualizarTroco();
     }
 
     private void BtnValorExato_Click(object sender, RoutedEventArgs e)
@@ -103,6 +125,18 @@ public partial class RecebimentoWindow : Window
 
     private void BtnConfirmar_Click(object sender, RoutedEventArgs e)
     {
+        if (EhFiado)
+        {
+            if (DtVencimento.SelectedDate is not DateTime venc || venc.Date < DateTime.Today)
+            {
+                AtualizarEstado();
+                return;
+            }
+            Pagamento = new InfoPagamento(FormaPagamento.Fiado, 0, 0, DateOnly.FromDateTime(venc));
+            DialogResult = true;
+            return;
+        }
+
         var pago = EhDinheiro ? ValorPagoCentavos() : _totalCentavos;
         if (pago < _totalCentavos) { AtualizarTroco(); return; } // guarda extra
 

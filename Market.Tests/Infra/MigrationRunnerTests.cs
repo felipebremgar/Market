@@ -78,8 +78,11 @@ public class MigrationRunnerTests
         var versaoFinal = CriarRunner().Aplicar(connection); // migrações reais
 
         Assert.Equal(SchemaMigrations.VersaoAlvo, versaoFinal);
-        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));       // migração 2
-        Assert.True(ColunaExiste(connection, "Venda", "FormaPagamento"));  // migração 3
+        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));         // migração 2
+        Assert.True(ColunaExiste(connection, "Venda", "FormaPagamento"));    // migração 3
+        Assert.True(ColunaExiste(connection, "Venda", "StatusPagamento"));   // migração 4
+        Assert.True(ColunaExiste(connection, "Venda", "DataVencimento"));    // migração 4
+        Assert.True(ColunaExiste(connection, "Venda", "DataBaixa"));         // migração 4
     }
 
     private static bool ColunaExiste(SqliteConnection connection, string tabela, string coluna)

@@ -29,6 +29,12 @@ public static class SchemaMigrations
         // v1.7 — Forma de pagamento gravada na venda.
         new Migration(3, "Adiciona coluna FormaPagamento em Venda",
             "ALTER TABLE Venda ADD COLUMN FormaPagamento TEXT NULL;"),
+
+        // v1.8 — Fiado: situação, vencimento e baixa na venda.
+        new Migration(4, "Adiciona colunas de fiado em Venda",
+            "ALTER TABLE Venda ADD COLUMN StatusPagamento TEXT NULL;" +
+            "ALTER TABLE Venda ADD COLUMN DataVencimento TEXT NULL;" +
+            "ALTER TABLE Venda ADD COLUMN DataBaixa TEXT NULL;"),
     };
 
     /// <summary>Maior número de migração conhecido — o alvo para o qual todo banco deve convergir.</summary>

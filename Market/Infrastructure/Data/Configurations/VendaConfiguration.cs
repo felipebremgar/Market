@@ -20,6 +20,13 @@ public class VendaConfiguration : IEntityTypeConfiguration<Venda>
             .HasColumnName("FormaPagamento")
             .HasConversion<string>();
 
+        // Fiado: situação (texto), vencimento (data) e baixa (data/hora) — todos opcionais.
+        builder.Property(v => v.Status)
+            .HasColumnName("StatusPagamento")
+            .HasConversion<string>();
+        builder.Property(v => v.DataVencimento).HasConversion(ValueConverters.IsoDate);
+        builder.Property(v => v.DataBaixa).HasConversion(ValueConverters.IsoDateTime);
+
         builder.Property(v => v.DataVenda)
             .HasConversion(ValueConverters.IsoDateTime)
             .HasDefaultValueSql("strftime('%Y-%m-%dT%H:%M:%S','now','localtime')")

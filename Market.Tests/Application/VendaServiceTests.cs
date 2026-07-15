@@ -182,6 +182,69 @@ public class VendaServiceTests
         Assert.Equal(FormaPagamento.Dinheiro, context.Vendas.Single().Forma);
     }
 
+    // ----- v1.8: fiado -----
+
+    [Fact]
+    public async Task Venda_fiada_registra_pendente_com_vencimento()
+    {
+        using var banco = new BancoDeTeste();
+        banco.CriarCliente(CpfValido, "Maria");
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 100);
+        var venc = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+
+        var resultado = await CriarServico(banco).FinalizarVendaAsync(
+            CpfValido, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Fiado, venc);
+
+        Assert.True(resultado.Sucesso);
+        using var context = banco.CreateDbContext();
+        var venda = context.Vendas.Single();
+        Assert.Equal(FormaPagamento.Fiado, venda.Forma);
+        Assert.Equal(StatusPagamento.Pendente, venda.Status);
+        Assert.Equal(venc, venda.DataVencimento);
+        Assert.Null(venda.DataBaixa);
+    }
+
+    [Fact]
+    public async Task Venda_fiada_sem_cliente_falha()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(estoque: 10);
+        var venc = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+
+        var resultado = await CriarServico(banco).FinalizarVendaAsync(
+            null, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Fiado, venc);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, e => e.Contains("cliente"));
+        using var context = banco.CreateDbContext();
+        Assert.Equal(0, context.Vendas.Count());
+    }
+
+    [Fact]
+    public async Task Venda_fiada_sem_vencimento_falha()
+    {
+        using var banco = new BancoDeTeste();
+        banco.CriarCliente(CpfValido, "Maria");
+        var m = banco.CriarMercadoria(estoque: 10);
+
+        var resultado = await CriarServico(banco).FinalizarVendaAsync(
+            CpfValido, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Fiado, null);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, e => e.Contains("vencimento"));
+    }
+
+    [Fact]
+    public async Task Venda_a_vista_nasce_paga()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 100);
+        await CriarServico(banco).FinalizarVendaAsync(null, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Cartao);
+
+        using var context = banco.CreateDbContext();
+        Assert.Equal(StatusPagamento.Pago, context.Vendas.Single().Status);
+    }
+
     // T20 — duas linhas do mesmo produto excedendo o estoque somado
     [Fact]
     public async Task Linhas_repetidas_do_mesmo_produto_baixam_cumulativamente()

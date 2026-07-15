@@ -7,7 +7,8 @@ namespace Market.Application.Services;
 /// Estado de tela — usado para exibir o troco e imprimir no recibo; não é persistido aqui
 /// (a forma de pagamento é gravada na própria venda).
 /// </summary>
-public record InfoPagamento(FormaPagamento Forma, int ValorPagoCentavos, int TrocoCentavos)
+public record InfoPagamento(
+    FormaPagamento Forma, int ValorPagoCentavos, int TrocoCentavos, DateOnly? DataVencimento = null)
 {
     public string FormaTexto => Forma.Texto();
 }

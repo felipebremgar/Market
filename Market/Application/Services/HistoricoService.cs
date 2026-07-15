@@ -37,7 +37,7 @@ public class HistoricoService
             .OrderByDescending(v => v.DataVenda)
             .Select(v => new VendaResumo(
                 v.Id, v.DataVenda, v.ValorTotal, v.ClienteCpf,
-                v.Cliente != null ? v.Cliente.Nome : null, v.Forma))
+                v.Cliente != null ? v.Cliente.Nome : null, v.Forma, v.Status, v.DataVencimento))
             .ToListAsync(cancellationToken);
     }
 

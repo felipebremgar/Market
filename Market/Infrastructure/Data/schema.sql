@@ -39,6 +39,9 @@ CREATE TABLE Venda (
     ValorTotal     INTEGER NOT NULL DEFAULT 0,
     ClienteCpf     TEXT    NULL,
     FormaPagamento TEXT    NULL,
+    StatusPagamento TEXT   NULL,
+    DataVencimento TEXT    NULL,
+    DataBaixa      TEXT    NULL,
     CHECK (ValorTotal >= 0),
     FOREIGN KEY (ClienteCpf) REFERENCES Cliente (Cpf)
         ON UPDATE CASCADE ON DELETE SET NULL
@@ -66,4 +69,4 @@ CREATE INDEX IX_ItemVenda_MercadoriaId ON ItemVenda (MercadoriaId);
 -- Bancos novos já nascem na versão de schema mais recente; o MigrationRunner só
 -- precisa atuar sobre bancos criados antes de uma migração. Mantenha este valor
 -- igual a SchemaMigrations.VersaoAlvo.
-PRAGMA user_version = 3;
+PRAGMA user_version = 4;

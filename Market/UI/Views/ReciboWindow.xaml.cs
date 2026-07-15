@@ -18,9 +18,14 @@ public partial class ReciboWindow : Window
 
         if (pagamento is not null)
         {
-            TxtPagamento.Text = pagamento.Forma == FormaPagamento.Dinheiro
-                ? $"Pagamento: {pagamento.FormaTexto}  ·  Recebido: {Moeda.ParaTexto(pagamento.ValorPagoCentavos)}  ·  Troco: {Moeda.ParaTexto(pagamento.TrocoCentavos)}"
-                : $"Pagamento: {pagamento.FormaTexto}";
+            TxtPagamento.Text = pagamento.Forma switch
+            {
+                FormaPagamento.Dinheiro =>
+                    $"Pagamento: {pagamento.FormaTexto}  ·  Recebido: {Moeda.ParaTexto(pagamento.ValorPagoCentavos)}  ·  Troco: {Moeda.ParaTexto(pagamento.TrocoCentavos)}",
+                FormaPagamento.Fiado =>
+                    $"Pagamento: {pagamento.FormaTexto}  ·  Vence em: {pagamento.DataVencimento:dd/MM/yyyy}",
+                _ => $"Pagamento: {pagamento.FormaTexto}"
+            };
             TxtPagamento.Visibility = System.Windows.Visibility.Visible;
         }
 

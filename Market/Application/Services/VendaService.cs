@@ -46,6 +46,7 @@ public class VendaService
     public async Task<ResultadoOperacao> FinalizarVendaAsync(
         string? clienteCpf, IReadOnlyList<ItemCarrinho> itens,
         FormaPagamento forma = FormaPagamento.Dinheiro,
+        DateOnly? dataVencimento = null,
         CancellationToken cancellationToken = default)
     {
         if (itens is null || itens.Count == 0)
@@ -55,6 +56,14 @@ public class VendaService
 
         var cpf = string.IsNullOrWhiteSpace(clienteCpf) ? null : Cpf.Normalizar(clienteCpf);
 
+        if (forma == FormaPagamento.Fiado)
+        {
+            if (cpf is null)
+                return ResultadoOperacao.Falha("Venda fiada exige um cliente.");
+            if (dataVencimento is null)
+                return ResultadoOperacao.Falha("Venda fiada exige uma data de vencimento.");
+        }
+
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
         await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
         try
@@ -63,7 +72,15 @@ public class VendaService
                 !await context.Clientes.AnyAsync(c => c.Cpf == cpf, cancellationToken))
                 return ResultadoOperacao.Falha("Cliente não encontrado.");
 
-            var venda = new Venda { DataVenda = DateTime.Now, ClienteCpf = cpf, ValorTotal = 0, Forma = forma };
+            var venda = new Venda
+            {
+                DataVenda = DateTime.Now,
+                ClienteCpf = cpf,
+                ValorTotal = 0,
+                Forma = forma,
+                Status = forma == FormaPagamento.Fiado ? StatusPagamento.Pendente : StatusPagamento.Pago,
+                DataVencimento = forma == FormaPagamento.Fiado ? dataVencimento : null
+            };
             context.Vendas.Add(venda);
             await context.SaveChangesAsync(cancellationToken); // gera o Id da venda
 

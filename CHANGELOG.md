@@ -4,6 +4,21 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.8.0] — Venda fiada (registro)
+
+### Adicionado
+- Forma de pagamento **Fiado**, com data de vencimento, no recebimento; a opção só é
+  habilitada quando há cliente selecionado (fiado exige cliente).
+- Situação da venda (Pendente/Pago) e coluna "Situação" no histórico, com o vencimento
+  das fiadas pendentes.
+- Migração de schema #4 (`StatusPagamento`, `DataVencimento`, `DataBaixa` na `Venda`).
+
+### Alterado
+- `VendaService.FinalizarVendaAsync` recebe o vencimento e grava fiado como Pendente
+  (com prazo) e as demais formas como Pago; recibo mostra o vencimento do fiado.
+- `schema.sql` cria as colunas de fiado e carimba `user_version = 4`.
+- Versão do app para 1.8.0.
+
 ## [1.7.0] — Forma de pagamento na venda
 
 ### Adicionado

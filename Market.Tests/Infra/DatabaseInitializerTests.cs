@@ -62,6 +62,9 @@ public class DatabaseInitializerTests
                 Executar(conn,
                     "ALTER TABLE Cliente DROP COLUMN Contato;" +
                     "ALTER TABLE Venda DROP COLUMN FormaPagamento;" +
+                    "ALTER TABLE Venda DROP COLUMN StatusPagamento;" +
+                    "ALTER TABLE Venda DROP COLUMN DataVencimento;" +
+                    "ALTER TABLE Venda DROP COLUMN DataBaixa;" +
                     "INSERT INTO Cliente (Cpf, Nome) VALUES ('52998224725','Ana');" +
                     "PRAGMA user_version = 1;");
             }
@@ -78,6 +81,8 @@ public class DatabaseInitializerTests
                     "SELECT COUNT(*) FROM pragma_table_info('Cliente') WHERE name='Contato';"));
                 Assert.Equal(1, Escalar(conn,
                     "SELECT COUNT(*) FROM pragma_table_info('Venda') WHERE name='FormaPagamento';"));
+                Assert.Equal(1, Escalar(conn,
+                    "SELECT COUNT(*) FROM pragma_table_info('Venda') WHERE name='DataVencimento';"));
                 Assert.Equal("Ana", Escalar(conn, "SELECT Nome FROM Cliente WHERE Cpf='52998224725';"));
             }
         }

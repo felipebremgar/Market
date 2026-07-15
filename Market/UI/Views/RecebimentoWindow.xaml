@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Recebimento" Height="470" Width="420"
+        Title="Recebimento" Height="500" Width="440"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <Window.Resources>
         <Style TargetType="RadioButton" x:Key="FormaBotao">
@@ -54,12 +54,14 @@
         <!-- Forma de pagamento -->
         <TextBlock Grid.Row="1" Text="Forma de pagamento" Margin="0,16,0,6"
                    FontSize="13" Foreground="#4C566A"/>
-        <UniformGrid Grid.Row="2" Columns="3">
+        <UniformGrid Grid.Row="2" Columns="4">
             <RadioButton x:Name="OpDinheiro" Content="Dinheiro" Style="{StaticResource FormaBotao}"
                          Checked="Forma_Changed"/>
             <RadioButton x:Name="OpCartao" Content="Cartão" Style="{StaticResource FormaBotao}"
                          Checked="Forma_Changed"/>
             <RadioButton x:Name="OpPix" Content="Pix" Style="{StaticResource FormaBotao}"
+                         Checked="Forma_Changed"/>
+            <RadioButton x:Name="OpFiado" Content="Fiado" Style="{StaticResource FormaBotao}"
                          Margin="0" Checked="Forma_Changed"/>
         </UniformGrid>
 
@@ -82,6 +84,15 @@
                 <Button Grid.Column="2" x:Name="BtnValorExato" Content="Valor exato" Height="36"
                         Padding="10,0" Click="BtnValorExato_Click"/>
             </Grid>
+        </StackPanel>
+
+        <!-- Vencimento (apenas fiado) -->
+        <StackPanel Grid.Row="3" x:Name="PainelFiado" Margin="0,16,0,0" Visibility="Collapsed">
+            <TextBlock Text="Data de vencimento" FontSize="13" Foreground="#4C566A"/>
+            <DatePicker x:Name="DtVencimento" Margin="0,4,0,0" Width="180"
+                        HorizontalAlignment="Left" SelectedDateChanged="DtVencimento_Changed"/>
+            <TextBlock FontSize="12" Foreground="#8A94A6" Margin="0,8,0,0" TextWrapping="Wrap"
+                       Text="A venda ficará pendente até o pagamento (baixa)."/>
         </StackPanel>
 
         <!-- Troco -->

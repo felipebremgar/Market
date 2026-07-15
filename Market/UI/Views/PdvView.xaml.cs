@@ -48,7 +48,8 @@ public partial class PdvView : UserControl
         if (_carrinho.Vazio) return;
 
         // Recebimento: forma de pagamento e troco antes de efetivar a venda.
-        var recebimento = new RecebimentoWindow(_carrinho.TotalCentavos) { Owner = Window.GetWindow(this) };
+        var recebimento = new RecebimentoWindow(_carrinho.TotalCentavos, ClienteCpfSelecionado is not null)
+        { Owner = Window.GetWindow(this) };
         if (recebimento.ShowDialog() != true || recebimento.Pagamento is null)
             return; // caixa voltou; carrinho preservado
 
@@ -60,7 +61,7 @@ public partial class PdvView : UserControl
         try
         {
             var resultado = await _vendas.FinalizarVendaAsync(
-                ClienteCpfSelecionado, _carrinho.ParaItensCarrinho(), pagamento.Forma);
+                ClienteCpfSelecionado, _carrinho.ParaItensCarrinho(), pagamento.Forma, pagamento.DataVencimento);
 
             if (!resultado.Sucesso)
             {

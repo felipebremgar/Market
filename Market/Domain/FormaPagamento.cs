@@ -1,7 +1,10 @@
 namespace Market.Domain;
 
 /// <summary>Forma de pagamento de uma venda.</summary>
-public enum FormaPagamento { Dinheiro, Cartao, Pix }
+public enum FormaPagamento { Dinheiro, Cartao, Pix, Fiado }
+
+/// <summary>Situação de pagamento de uma venda (fiado nasce Pendente até a baixa).</summary>
+public enum StatusPagamento { Pago, Pendente }
 
 public static class FormaPagamentoExtensions
 {
@@ -11,6 +14,7 @@ public static class FormaPagamentoExtensions
         FormaPagamento.Dinheiro => "Dinheiro",
         FormaPagamento.Cartao => "Cartão",
         FormaPagamento.Pix => "Pix",
+        FormaPagamento.Fiado => "Fiado",
         _ => forma.ToString()
     };
 }

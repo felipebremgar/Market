@@ -128,4 +128,21 @@ public class HistoricoServiceTests
         Assert.Equal(FormaPagamento.Pix, vendas[0].Forma);
         Assert.Equal("Pix", vendas[0].FormaTexto);
     }
+
+    // v1.8 — a situação de uma venda fiada (pendente + vencimento) aparece no resumo
+    [Fact]
+    public async Task Resumo_de_venda_fiada_mostra_pendente()
+    {
+        using var banco = new BancoDeTeste();
+        banco.CriarCliente(CpfA, "Maria");
+        var m = banco.CriarMercadoria(precoVenda: 100);
+        var venc = DateOnly.FromDateTime(DateTime.Today.AddDays(15));
+        await new VendaService(banco, NullLogger<VendaService>.Instance)
+            .FinalizarVendaAsync(CpfA, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Fiado, venc);
+
+        var vendas = await CriarServico(banco).BuscarVendasAsync(FiltroVenda.Nenhum);
+
+        Assert.Equal(StatusPagamento.Pendente, vendas[0].Status);
+        Assert.Contains("Pendente", vendas[0].SituacaoTexto);
+    }
 }
