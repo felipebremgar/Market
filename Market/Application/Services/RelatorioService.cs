@@ -25,8 +25,10 @@ public class RelatorioService
             .GroupBy(_ => 1)
             .Select(g => new
             {
-                Custo = g.Sum(i => (long)i.Quantidade * i.PrecoCusto),
-                Receita = g.Sum(i => (long)i.Quantidade * i.PrecoUnitario)
+                // Totais congelados na venda: somar direto evita divergir do recibo
+                // (itens por peso têm arredondamento ao centavo).
+                Custo = g.Sum(i => (long)i.CustoCentavos),
+                Receita = g.Sum(i => (long)i.SubtotalCentavos)
             })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -44,8 +46,8 @@ public class RelatorioService
             {
                 g.Key.Nome,
                 Qtd = g.Sum(i => i.Quantidade),
-                Custo = g.Sum(i => (long)i.Quantidade * i.PrecoCusto),
-                Receita = g.Sum(i => (long)i.Quantidade * i.PrecoUnitario)
+                Custo = g.Sum(i => (long)i.CustoCentavos),
+                Receita = g.Sum(i => (long)i.SubtotalCentavos)
             })
             .OrderByDescending(x => x.Receita - x.Custo)
             .ToListAsync(cancellationToken);
@@ -64,8 +66,8 @@ public class RelatorioService
             .Select(i => new
             {
                 i.Venda.DataVenda,
-                Custo = (long)i.Quantidade * i.PrecoCusto,
-                Receita = (long)i.Quantidade * i.PrecoUnitario
+                Custo = (long)i.CustoCentavos,
+                Receita = (long)i.SubtotalCentavos
             })
             .ToListAsync(cancellationToken);
 

@@ -20,7 +20,14 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
     public BancoDeTeste()
     {
         _dbPath = Path.Combine(Path.GetTempPath(), $"market-test-{Guid.NewGuid():N}.db");
-        _connectionString = new SqliteConnectionStringBuilder { DataSource = _dbPath }.ToString();
+        _connectionString = new SqliteConnectionStringBuilder
+        {
+            DataSource = _dbPath,
+            // Sem pooling: o Dispose libera o arquivo de verdade, sem precisar de
+            // SqliteConnection.ClearAllPools() — que é global no processo e derrubava
+            // conexões de testes rodando em paralelo (fonte de falhas intermitentes).
+            Pooling = false
+        }.ToString();
         _options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(_connectionString)
             .Options;
@@ -42,12 +49,14 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
 
     public Mercadoria CriarMercadoria(
         int estoque = 10, int precoVenda = 1000, int precoCusto = 500,
-        string? codigoBarras = null, string nome = "Produto", bool ativo = true)
+        string? codigoBarras = null, string nome = "Produto", bool ativo = true,
+        UnidadeMedida unidade = UnidadeMedida.Unidade)
     {
         using var context = CreateDbContext();
         var mercadoria = new Mercadoria
         {
             Nome = nome,
+            Unidade = unidade,
             Quantidade = estoque,
             PrecoVenda = precoVenda,
             PrecoCusto = precoCusto,
@@ -87,8 +96,11 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
                 VendaId = venda.Id,
                 MercadoriaId = item.MercadoriaId,
                 Quantidade = item.Qtd,
+                Unidade = UnidadeMedida.Unidade,
                 PrecoUnitario = item.Preco,
-                PrecoCusto = 0
+                PrecoCusto = 0,
+                SubtotalCentavos = item.Qtd * item.Preco,   // totais congelados, como na venda real
+                CustoCentavos = 0
             });
         context.SaveChanges();
         return venda;
@@ -115,8 +127,11 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
                 VendaId = venda.Id,
                 MercadoriaId = item.MercadoriaId,
                 Quantidade = item.Qtd,
+                Unidade = UnidadeMedida.Unidade,
                 PrecoUnitario = item.PrecoVenda,
-                PrecoCusto = item.PrecoCusto
+                PrecoCusto = item.PrecoCusto,
+                SubtotalCentavos = item.Qtd * item.PrecoVenda,   // totais congelados, como na venda real
+                CustoCentavos = item.Qtd * item.PrecoCusto
             });
         context.SaveChanges();
         return venda;
@@ -130,7 +145,6 @@ public sealed class BancoDeTeste : IDbContextFactory<AppDbContext>, IDisposable
 
     public void Dispose()
     {
-        SqliteConnection.ClearAllPools();
         if (File.Exists(_dbPath))
             File.Delete(_dbPath);
     }

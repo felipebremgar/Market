@@ -36,6 +36,11 @@ public partial class EditarMercadoriaWindow : Window
         TxtCodigoBarras.Text = m.CodigoBarras ?? string.Empty;
         TxtNome.Text = m.Nome;
         TxtFornecedor.Text = m.Fornecedor ?? string.Empty;
+
+        // Define a unidade antes dos demais campos: dispara Unidade_Changed, que ajusta a tela.
+        if (m.Unidade == UnidadeMedida.Quilo) OpQuilo.IsChecked = true;
+        else OpUnidade.IsChecked = true;
+
         TxtPrecoCusto.Text = Moeda.ParaReais(m.PrecoCusto).ToString("0.00");
         TxtPrecoVenda.Text = Moeda.ParaReais(m.PrecoVenda).ToString("0.00");
         TxtQuantidade.Text = m.Quantidade.ToString();
@@ -53,6 +58,28 @@ public partial class EditarMercadoriaWindow : Window
     {
         DtValidade.IsEnabled = ChkPossuiValidade.IsChecked == true;
         if (!DtValidade.IsEnabled) DtValidade.SelectedDate = null;
+    }
+
+    /// <summary>Item por peso (verduras/frutas): preços por kg, sem estoque nem validade.</summary>
+    private bool PorPeso => OpQuilo.IsChecked == true;
+
+    private void Unidade_Changed(object sender, RoutedEventArgs e)
+    {
+        // O Checked dispara durante o InitializeComponent, antes dos painéis existirem.
+        if (PainelQuantidade is null) return;
+
+        var porPeso = PorPeso;
+        PainelQuantidade.Visibility = porPeso ? Visibility.Collapsed : Visibility.Visible;
+        PainelValidade.Visibility = porPeso ? Visibility.Collapsed : Visibility.Visible;
+
+        RotuloCusto.Text = porPeso ? "Preço de custo (R$ por kg)" : "Preço de custo (R$)";
+        RotuloVenda.Text = porPeso ? "Preço de venda (R$ por kg)" : "Preço de venda (R$)";
+
+        if (porPeso)
+        {
+            TxtQuantidade.Text = "0";
+            ChkPossuiValidade.IsChecked = false;
+        }
     }
 
     private async void BtnSalvar_Click(object sender, RoutedEventArgs e)
@@ -78,6 +105,7 @@ public partial class EditarMercadoriaWindow : Window
         {
             Nome = TxtNome.Text,
             Fornecedor = TxtFornecedor.Text,
+            Unidade = PorPeso ? UnidadeMedida.Quilo : UnidadeMedida.Unidade,
             PrecoCustoReais = custoReais,
             PrecoVendaReais = vendaReais,
             Quantidade = quantidade,

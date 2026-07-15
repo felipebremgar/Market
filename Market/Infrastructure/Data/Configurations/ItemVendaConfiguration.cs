@@ -17,6 +17,11 @@ public class ItemVendaConfiguration : IEntityTypeConfiguration<ItemVenda>
         builder.Property(i => i.PrecoUnitario).IsRequired();
         builder.Property(i => i.PrecoCusto).IsRequired();
 
+        // Unidade congelada (texto) e totais já calculados na venda.
+        builder.Property(i => i.Unidade).HasConversion<string>().IsRequired();
+        builder.Property(i => i.SubtotalCentavos).IsRequired();
+        builder.Property(i => i.CustoCentavos).IsRequired();
+
         // Excluir a venda cascateia para seus itens.
         builder.HasOne(i => i.Venda)
             .WithMany(v => v.Itens)

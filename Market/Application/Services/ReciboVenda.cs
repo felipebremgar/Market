@@ -14,8 +14,19 @@ public record ReciboVenda(
     StatusPagamento? Status = null,
     DateOnly? DataVencimento = null);
 
-/// <summary>Linha do recibo, com valores congelados no momento da venda.</summary>
-public record ReciboItem(string Nome, int Quantidade, int PrecoUnitarioCentavos)
+/// <summary>
+/// Linha do recibo, com valores congelados no momento da venda.
+/// <paramref name="Quantidade"/> é a contagem (itens por unidade) ou o peso em GRAMAS
+/// (itens por quilo); <paramref name="SubtotalCentavos"/> vem pronto do banco.
+/// </summary>
+public record ReciboItem(
+    string Nome, int Quantidade, int PrecoUnitarioCentavos, UnidadeMedida Unidade, int SubtotalCentavos)
 {
-    public int SubtotalCentavos => Quantidade * PrecoUnitarioCentavos;
+    public string QuantidadeTexto => Unidade.FormatarQuantidade(Quantidade);
+
+    public string PrecoUnitarioTexto => Unidade == UnidadeMedida.Quilo
+        ? $"{Moeda.ParaTexto(PrecoUnitarioCentavos)}/kg"
+        : Moeda.ParaTexto(PrecoUnitarioCentavos);
+
+    public string SubtotalTexto => Moeda.ParaTexto(SubtotalCentavos);
 }

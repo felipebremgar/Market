@@ -48,7 +48,8 @@ public class HistoricoService
 
         return await context.ItensVenda.AsNoTracking()
             .Where(i => i.VendaId == vendaId)
-            .Select(i => new ReciboItem(i.Mercadoria.Nome, i.Quantidade, i.PrecoUnitario))
+            .Select(i => new ReciboItem(
+                i.Mercadoria.Nome, i.Quantidade, i.PrecoUnitario, i.Unidade, i.SubtotalCentavos))
             .ToListAsync(cancellationToken);
     }
 }

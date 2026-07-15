@@ -4,6 +4,28 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [2.4.0] — Venda por peso (verduras e frutas)
+
+### Adicionado
+- Tipo de venda no cadastro/edição de mercadoria: **Unidade** ou **Kg**. Em Kg, os preços
+  passam a ser por quilo e quantidade/validade somem (esses itens não têm acompanhamento).
+- PDV: ao bipar um item por Kg, abre a **janela de peso** (em kg, com o total ao vivo);
+  o peso entra no carrinho em gramas e **não interfere no estoque**.
+- Coluna "Tipo" na listagem de mercadorias; carrinho, recibo e histórico mostram a
+  quantidade conforme a unidade ("2 un" / "0,750 kg") e o preço "/kg" quando for o caso.
+- Migração de schema #5 (`Mercadoria.Unidade`; `ItemVenda.Unidade`, `SubtotalCentavos`,
+  `CustoCentavos`) com **backfill** do histórico existente.
+
+### Alterado
+- Os totais de cada item passam a ser **congelados na venda** (`CalculoItem`, fonte única
+  do cálculo). Recibo, histórico e relatório leem o valor pronto — o relatório vira uma
+  soma simples e bate exatamente com a venda, inclusive nos itens por peso, onde recalcular
+  causaria divergência de centavos por arredondamento.
+
+### Corrigido
+- Itens por peso não são mais marcados como "estoque baixo" na listagem (a quantidade
+  deles é sempre zero).
+
 ## [2.3.0] — PDV: cliente e busca de produtos
 
 ### Alterado

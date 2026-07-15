@@ -56,6 +56,28 @@ public partial class CadastroMercadoriaView : UserControl
         if (!DtValidade.IsEnabled) DtValidade.SelectedDate = null;
     }
 
+    /// <summary>Item por peso (verduras/frutas): preços por kg, sem estoque nem validade.</summary>
+    private bool PorPeso => OpQuilo.IsChecked == true;
+
+    private void Unidade_Changed(object sender, RoutedEventArgs e)
+    {
+        // O Checked dispara durante o InitializeComponent, antes dos painéis existirem.
+        if (PainelQuantidade is null) return;
+
+        var porPeso = PorPeso;
+        PainelQuantidade.Visibility = porPeso ? Visibility.Collapsed : Visibility.Visible;
+        PainelValidade.Visibility = porPeso ? Visibility.Collapsed : Visibility.Visible;
+
+        RotuloCusto.Text = porPeso ? "Preço de custo (R$ por kg)" : "Preço de custo (R$)";
+        RotuloVenda.Text = porPeso ? "Preço de venda (R$ por kg)" : "Preço de venda (R$)";
+
+        if (porPeso)
+        {
+            TxtQuantidade.Text = "0";
+            ChkPossuiValidade.IsChecked = false;
+        }
+    }
+
     // ----- Leitor de código de barras -----
 
     private async void TxtCodigoBarras_KeyDown(object sender, KeyEventArgs e)
@@ -133,6 +155,7 @@ public partial class CadastroMercadoriaView : UserControl
         {
             Nome = TxtNome.Text,
             Fornecedor = TxtFornecedor.Text,
+            Unidade = PorPeso ? UnidadeMedida.Quilo : UnidadeMedida.Unidade,
             PrecoCustoReais = custoReais,
             PrecoVendaReais = vendaReais,
             Quantidade = quantidade,
@@ -225,6 +248,7 @@ public partial class CadastroMercadoriaView : UserControl
         TxtMargem.Text = "25";
         ChkPossuiValidade.IsChecked = false;
         DtValidade.SelectedDate = null;
+        OpUnidade.IsChecked = true;   // volta ao padrão (dispara Unidade_Changed)
         TxtCodigoBarras.Focus();
     }
 

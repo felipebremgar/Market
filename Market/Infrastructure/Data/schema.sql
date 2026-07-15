@@ -14,6 +14,7 @@ CREATE TABLE Mercadoria (
     Id            INTEGER PRIMARY KEY AUTOINCREMENT,
     Nome          TEXT    NOT NULL,
     Fornecedor    TEXT    NULL,
+    Unidade       TEXT    NOT NULL DEFAULT 'Unidade',
     PrecoCusto    INTEGER NOT NULL DEFAULT 0,
     PrecoVenda    INTEGER NOT NULL DEFAULT 0,
     Quantidade    INTEGER NOT NULL DEFAULT 0,
@@ -51,12 +52,17 @@ CREATE INDEX IX_Venda_ClienteCpf ON Venda (ClienteCpf);
 
 -- ---------- ItemVenda (preço e custo congelados) ----------
 CREATE TABLE ItemVenda (
-    Id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    VendaId        INTEGER NOT NULL,
-    MercadoriaId   INTEGER NOT NULL,
-    Quantidade     INTEGER NOT NULL,
-    PrecoUnitario  INTEGER NOT NULL,
-    PrecoCusto     INTEGER NOT NULL DEFAULT 0,
+    Id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    VendaId          INTEGER NOT NULL,
+    MercadoriaId     INTEGER NOT NULL,
+    -- Contagem para itens por unidade; GRAMAS para itens por quilo.
+    Quantidade       INTEGER NOT NULL,
+    Unidade          TEXT    NOT NULL DEFAULT 'Unidade',
+    PrecoUnitario    INTEGER NOT NULL,
+    PrecoCusto       INTEGER NOT NULL DEFAULT 0,
+    -- Totais congelados na venda (evitam recalcular e divergir por arredondamento).
+    SubtotalCentavos INTEGER NOT NULL DEFAULT 0,
+    CustoCentavos    INTEGER NOT NULL DEFAULT 0,
     CHECK (Quantidade > 0),
     CHECK (PrecoUnitario >= 0),
     FOREIGN KEY (VendaId) REFERENCES Venda (Id) ON DELETE CASCADE,
@@ -69,4 +75,4 @@ CREATE INDEX IX_ItemVenda_MercadoriaId ON ItemVenda (MercadoriaId);
 -- Bancos novos já nascem na versão de schema mais recente; o MigrationRunner só
 -- precisa atuar sobre bancos criados antes de uma migração. Mantenha este valor
 -- igual a SchemaMigrations.VersaoAlvo.
-PRAGMA user_version = 4;
+PRAGMA user_version = 5;

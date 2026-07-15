@@ -31,7 +31,7 @@ public class ReciboWindowSmokeTests
         {
             var recibo = new ReciboVenda(
                 1, DateTime.Now, "Maria", "52998224725", 250,
-                new[] { new ReciboItem("Arroz", 1, 250) },
+                new[] { new ReciboItem("Arroz", 1, 250, UnidadeMedida.Unidade, 250) },
                 FormaPagamento.Fiado, StatusPagamento.Pendente,
                 DateOnly.FromDateTime(DateTime.Today.AddDays(10)));
 

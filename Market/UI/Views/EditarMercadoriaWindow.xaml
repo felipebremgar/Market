@@ -39,6 +39,16 @@
                 <TextBlock Text="Fornecedor" Style="{StaticResource Rotulo}"/>
                 <TextBox x:Name="TxtFornecedor" MaxLength="120"/>
 
+                <!-- Tipo de venda: Kg (verduras/frutas) não tem estoque nem validade -->
+                <TextBlock Text="Tipo de venda" Style="{StaticResource Rotulo}"/>
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="OpUnidade" Content="Unidade" IsChecked="True"
+                                 Margin="0,0,20,0" VerticalContentAlignment="Center"
+                                 Checked="Unidade_Changed"/>
+                    <RadioButton x:Name="OpQuilo" Content="Kg" VerticalContentAlignment="Center"
+                                 Checked="Unidade_Changed"/>
+                </StackPanel>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -46,28 +56,33 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="Preço de custo (R$)" Style="{StaticResource Rotulo}"/>
+                        <TextBlock x:Name="RotuloCusto" Text="Preço de custo (R$)" Style="{StaticResource Rotulo}"/>
                         <TextBox x:Name="TxtPrecoCusto" MaxLength="12"
                                  PreviewTextInput="Decimal_PreviewTextInput"
                                  DataObject.Pasting="Decimal_Pasting"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Preço de venda (R$)" Style="{StaticResource Rotulo}"/>
+                        <TextBlock x:Name="RotuloVenda" Text="Preço de venda (R$)" Style="{StaticResource Rotulo}"/>
                         <TextBox x:Name="TxtPrecoVenda" MaxLength="12"
                                  PreviewTextInput="Decimal_PreviewTextInput"
                                  DataObject.Pasting="Decimal_Pasting"/>
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Text="Quantidade em estoque" Style="{StaticResource Rotulo}"/>
-                <TextBox x:Name="TxtQuantidade" MaxLength="7"
-                         PreviewTextInput="Inteiro_PreviewTextInput"
-                         DataObject.Pasting="Inteiro_Pasting"/>
+                <!-- Quantidade e validade não se aplicam a itens por peso -->
+                <StackPanel x:Name="PainelQuantidade">
+                    <TextBlock Text="Quantidade em estoque" Style="{StaticResource Rotulo}"/>
+                    <TextBox x:Name="TxtQuantidade" MaxLength="7"
+                             PreviewTextInput="Inteiro_PreviewTextInput"
+                             DataObject.Pasting="Inteiro_Pasting"/>
+                </StackPanel>
 
-                <CheckBox x:Name="ChkPossuiValidade" Content="Possui validade" Margin="0,16,0,0"
-                          Checked="ChkPossuiValidade_Changed" Unchecked="ChkPossuiValidade_Changed"/>
-                <DatePicker x:Name="DtValidade" IsEnabled="False" Margin="0,6,0,0"
-                            HorizontalAlignment="Left" Width="180"/>
+                <StackPanel x:Name="PainelValidade">
+                    <CheckBox x:Name="ChkPossuiValidade" Content="Possui validade" Margin="0,16,0,0"
+                              Checked="ChkPossuiValidade_Changed" Unchecked="ChkPossuiValidade_Changed"/>
+                    <DatePicker x:Name="DtValidade" IsEnabled="False" Margin="0,6,0,0"
+                                HorizontalAlignment="Left" Width="180"/>
+                </StackPanel>
 
                 <TextBlock x:Name="TxtCadastro" Foreground="Gray" FontSize="12" Margin="0,14,0,0"/>
 

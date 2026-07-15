@@ -95,8 +95,8 @@
                           HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*"/>
-                        <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="Auto"/>
-                        <DataGridTextColumn Header="Preço" Binding="{Binding PrecoTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Qtd" Binding="{Binding QuantidadeTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Preço" Binding="{Binding PrecoUnitarioTexto}" Width="Auto"/>
                         <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto"/>
                     </DataGrid.Columns>
                 </DataGrid>

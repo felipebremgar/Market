@@ -16,9 +16,8 @@ public class MigrationRunnerTests
     private static SqliteConnection AbrirBancoEmMemoria()
     {
         // Conexão única mantida aberta: o banco :memory: vive enquanto a conexão viver.
-        // Pooling=False é essencial: outros testes (BancoDeTeste) chamam
-        // SqliteConnection.ClearAllPools() no Dispose, o que descartaria o handle
-        // nativo desta conexão se ela participasse do pool compartilhado.
+        // Pooling=False mantém esta conexão fora do pool compartilhado do processo —
+        // o padrão da suíte, para que testes em paralelo não interfiram uns nos outros.
         var connection = new SqliteConnection("Data Source=:memory:;Pooling=False");
         connection.Open();
         return connection;
@@ -71,6 +70,9 @@ public class MigrationRunnerTests
             cmd.CommandText =
                 "CREATE TABLE Cliente (Cpf TEXT PRIMARY KEY, Nome TEXT NOT NULL);" +
                 "CREATE TABLE Venda (Id INTEGER PRIMARY KEY, ValorTotal INTEGER);" +
+                "CREATE TABLE Mercadoria (Id INTEGER PRIMARY KEY, Nome TEXT NOT NULL);" +
+                "CREATE TABLE ItemVenda (Id INTEGER PRIMARY KEY, Quantidade INTEGER," +
+                "                        PrecoUnitario INTEGER, PrecoCusto INTEGER);" +
                 "PRAGMA user_version = 1;";
             cmd.ExecuteNonQuery();
         }
@@ -78,11 +80,15 @@ public class MigrationRunnerTests
         var versaoFinal = CriarRunner().Aplicar(connection); // migrações reais
 
         Assert.Equal(SchemaMigrations.VersaoAlvo, versaoFinal);
-        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));         // migração 2
-        Assert.True(ColunaExiste(connection, "Venda", "FormaPagamento"));    // migração 3
-        Assert.True(ColunaExiste(connection, "Venda", "StatusPagamento"));   // migração 4
-        Assert.True(ColunaExiste(connection, "Venda", "DataVencimento"));    // migração 4
-        Assert.True(ColunaExiste(connection, "Venda", "DataBaixa"));         // migração 4
+        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));            // migração 2
+        Assert.True(ColunaExiste(connection, "Venda", "FormaPagamento"));       // migração 3
+        Assert.True(ColunaExiste(connection, "Venda", "StatusPagamento"));      // migração 4
+        Assert.True(ColunaExiste(connection, "Venda", "DataVencimento"));       // migração 4
+        Assert.True(ColunaExiste(connection, "Venda", "DataBaixa"));            // migração 4
+        Assert.True(ColunaExiste(connection, "Mercadoria", "Unidade"));         // migração 5
+        Assert.True(ColunaExiste(connection, "ItemVenda", "Unidade"));          // migração 5
+        Assert.True(ColunaExiste(connection, "ItemVenda", "SubtotalCentavos")); // migração 5
+        Assert.True(ColunaExiste(connection, "ItemVenda", "CustoCentavos"));    // migração 5
     }
 
     private static bool ColunaExiste(SqliteConnection connection, string tabela, string coluna)

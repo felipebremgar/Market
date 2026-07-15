@@ -7,10 +7,14 @@ public class Mercadoria
     public string Nome { get; set; } = string.Empty;
     public string? Fornecedor { get; set; }
 
-    // Valores monetários em centavos.
+    // Como é vendida. Quilo (verduras/frutas): preços por kg, sem estoque nem validade.
+    public UnidadeMedida Unidade { get; set; } = UnidadeMedida.Unidade;
+
+    // Valores monetários em centavos (por unidade ou por quilo, conforme Unidade).
     public int PrecoCusto { get; set; }
     public int PrecoVenda { get; set; }
 
+    // Ignorada quando Unidade = Quilo (esses itens não têm acompanhamento de estoque).
     public int Quantidade { get; set; }
     public string? CodigoBarras { get; set; }
 

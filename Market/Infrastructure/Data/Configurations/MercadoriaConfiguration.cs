@@ -14,6 +14,7 @@ public class MercadoriaConfiguration : IEntityTypeConfiguration<Mercadoria>
         builder.Property(m => m.Id).ValueGeneratedOnAdd();
 
         builder.Property(m => m.Nome).IsRequired();
+        builder.Property(m => m.Unidade).HasConversion<string>().IsRequired();
         builder.Property(m => m.PrecoCusto).IsRequired();
         builder.Property(m => m.PrecoVenda).IsRequired();
         builder.Property(m => m.Quantidade).IsRequired();

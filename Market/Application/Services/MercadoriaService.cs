@@ -148,11 +148,16 @@ public class MercadoriaService
     {
         mercadoria.Nome = nome;
         mercadoria.Fornecedor = string.IsNullOrWhiteSpace(dados.Fornecedor) ? null : dados.Fornecedor.Trim();
+        mercadoria.Unidade = dados.Unidade;
         mercadoria.PrecoCusto = Moeda.ParaCentavos(dados.PrecoCustoReais);
         mercadoria.PrecoVenda = Moeda.ParaCentavos(dados.PrecoVendaReais);
-        mercadoria.Quantidade = dados.Quantidade;
         mercadoria.CodigoBarras = codigoBarras;
-        mercadoria.Validade = dados.Validade;
+
+        // Regra do domínio: itens por peso não têm estoque nem validade — zera aqui,
+        // independentemente do que a tela mandar.
+        var porPeso = dados.Unidade == UnidadeMedida.Quilo;
+        mercadoria.Quantidade = porPeso ? 0 : dados.Quantidade;
+        mercadoria.Validade = porPeso ? null : dados.Validade;
     }
 
     private static bool EhViolacaoUnicidade(DbUpdateException ex)

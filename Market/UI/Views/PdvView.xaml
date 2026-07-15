@@ -59,15 +59,20 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Produto" Binding="{Binding Nome}" Width="*" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Preço" Binding="{Binding PrecoUnitarioTexto}" Width="Auto" IsReadOnly="True"/>
+                <!-- Itens por peso guardam GRAMAS aqui; a coluna "Un." mostra a unidade. -->
                 <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="60"
                                     x:Name="ColunaQtd"/>
+                <DataGridTextColumn Header="Un." Binding="{Binding UnidadeQuantidadeTexto}"
+                                    Width="Auto" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Subtotal" Binding="{Binding SubtotalTexto}" Width="Auto" IsReadOnly="True"/>
                 <DataGridTemplateColumn Header="" Width="Auto" IsReadOnly="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
-                                <Button Content="−" Width="28" Margin="2,0" Click="BtnMenos_Click"/>
-                                <Button Content="+" Width="28" Margin="2,0" Click="BtnMais_Click"/>
+                                <Button Content="−" Width="28" Margin="2,0" Click="BtnMenos_Click"
+                                        IsEnabled="{Binding PodeAjustarQuantidade}"/>
+                                <Button Content="+" Width="28" Margin="2,0" Click="BtnMais_Click"
+                                        IsEnabled="{Binding PodeAjustarQuantidade}"/>
                                 <Button Content="Remover" Margin="6,0,2,0" Click="BtnRemover_Click"/>
                             </StackPanel>
                         </DataTemplate>

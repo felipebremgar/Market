@@ -221,12 +221,25 @@ public partial class PdvView : UserControl
 
     private void AdicionarAoCarrinho(Mercadoria mercadoria)
     {
-        var resultado = _carrinho.Adicionar(mercadoria);
+        var quantidade = 1;
+
+        // Item por peso: pede o peso antes de somar ao carrinho (guardado em gramas).
+        if (mercadoria.Unidade == UnidadeMedida.Quilo)
+        {
+            var janelaPeso = new PesoWindow(mercadoria.Nome, mercadoria.PrecoVenda)
+            { Owner = Window.GetWindow(this) };
+
+            if (janelaPeso.ShowDialog() != true || janelaPeso.Gramas is not int gramas)
+                return; // caixa cancelou: nada entra no carrinho
+
+            quantidade = gramas;
+        }
+
+        var resultado = _carrinho.Adicionar(mercadoria, quantidade);
         if (resultado.Sucesso)
         {
             var linha = _carrinho.Linhas.FirstOrDefault(l => l.MercadoriaId == mercadoria.Id);
-            var qtd = linha?.Quantidade ?? 1;
-            MostrarSucesso($"Adicionado: {mercadoria.Nome}  (x{qtd})");
+            MostrarSucesso($"Adicionado: {mercadoria.Nome}  ({linha?.QuantidadeTexto})");
         }
         else
         {

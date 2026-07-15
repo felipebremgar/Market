@@ -30,15 +30,9 @@ public partial class ReciboWindow : Window
             TxtPagamento.Visibility = Visibility.Visible;
         }
 
-        GridItens.ItemsSource = recibo.Itens
-            .Select(i => new
-            {
-                i.Nome,
-                i.Quantidade,
-                PrecoTexto = Moeda.ParaTexto(i.PrecoUnitarioCentavos),
-                SubtotalTexto = Moeda.ParaTexto(i.SubtotalCentavos)
-            })
-            .ToList();
+        // O próprio ReciboItem já expõe os textos (quantidade conforme a unidade, preço /kg
+        // quando for o caso e o subtotal congelado).
+        GridItens.ItemsSource = recibo.Itens;
     }
 
     /// <summary>

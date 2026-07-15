@@ -121,9 +121,10 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Nome" Binding="{Binding Nome}" Width="2*"/>
                 <DataGridTextColumn Header="Fornecedor" Binding="{Binding Fornecedor}" Width="*"/>
+                <DataGridTextColumn Header="Tipo" Binding="{Binding UnidadeTexto}" Width="Auto"/>
                 <DataGridTextColumn Header="Custo" Binding="{Binding PrecoCustoTexto}" Width="Auto"/>
                 <DataGridTextColumn Header="Venda" Binding="{Binding PrecoVendaTexto}" Width="Auto"/>
-                <DataGridTextColumn Header="Qtd" Binding="{Binding Quantidade}" Width="Auto"/>
+                <DataGridTextColumn Header="Qtd" Binding="{Binding QuantidadeTexto}" Width="Auto"/>
                 <DataGridTextColumn Header="Código de barras" Binding="{Binding CodigoBarras}" Width="Auto"/>
                 <DataGridTextColumn Header="Validade" Binding="{Binding ValidadeTexto}" Width="Auto"/>
                 <DataGridTextColumn Header="Cadastro" Binding="{Binding DataCadastroTexto}" Width="Auto"/>

@@ -35,6 +35,17 @@ public static class SchemaMigrations
             "ALTER TABLE Venda ADD COLUMN StatusPagamento TEXT NULL;" +
             "ALTER TABLE Venda ADD COLUMN DataVencimento TEXT NULL;" +
             "ALTER TABLE Venda ADD COLUMN DataBaixa TEXT NULL;"),
+
+        // v2.4 — Venda por peso (verduras/frutas): unidade da mercadoria e, no item,
+        // a unidade congelada + os totais já calculados. O UPDATE faz o backfill do
+        // histórico: todo item antigo é por unidade, então total = quantidade × preço.
+        new Migration(5, "Adiciona unidade de medida e totais congelados no item",
+            "ALTER TABLE Mercadoria ADD COLUMN Unidade TEXT NOT NULL DEFAULT 'Unidade';" +
+            "ALTER TABLE ItemVenda ADD COLUMN Unidade TEXT NOT NULL DEFAULT 'Unidade';" +
+            "ALTER TABLE ItemVenda ADD COLUMN SubtotalCentavos INTEGER NOT NULL DEFAULT 0;" +
+            "ALTER TABLE ItemVenda ADD COLUMN CustoCentavos INTEGER NOT NULL DEFAULT 0;" +
+            "UPDATE ItemVenda SET SubtotalCentavos = Quantidade * PrecoUnitario," +
+            "                     CustoCentavos    = Quantidade * PrecoCusto;"),
     };
 
     /// <summary>Maior número de migração conhecido — o alvo para o qual todo banco deve convergir.</summary>

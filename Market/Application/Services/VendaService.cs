@@ -36,7 +36,8 @@ public class VendaService
             return null;
 
         var itens = venda.Itens
-            .Select(i => new ReciboItem(i.Mercadoria.Nome, i.Quantidade, i.PrecoUnitario))
+            .Select(i => new ReciboItem(
+                i.Mercadoria.Nome, i.Quantidade, i.PrecoUnitario, i.Unidade, i.SubtotalCentavos))
             .ToList();
 
         return new ReciboVenda(
@@ -97,22 +98,40 @@ public class VendaService
                     return await Cancelar(transaction,
                         $"Mercadoria (id {item.MercadoriaId}) não encontrada.", cancellationToken);
 
-                if (mercadoria.Quantidade < item.Quantidade)
-                    return await Cancelar(transaction,
-                        $"Estoque insuficiente para '{mercadoria.Nome}'. Disponível: {mercadoria.Quantidade}.",
-                        cancellationToken);
+                // Itens por peso (verduras/frutas) não têm acompanhamento de estoque:
+                // não validam disponibilidade nem dão baixa.
+                if (mercadoria.Unidade != UnidadeMedida.Quilo)
+                {
+                    if (mercadoria.Quantidade < item.Quantidade)
+                        return await Cancelar(transaction,
+                            $"Estoque insuficiente para '{mercadoria.Nome}'. Disponível: {mercadoria.Quantidade}.",
+                            cancellationToken);
 
-                mercadoria.Quantidade -= item.Quantidade; // baixa no estoque
+                    mercadoria.Quantidade -= item.Quantidade; // baixa no estoque
+                }
+
+                // Totais congelados: calculados uma única vez aqui, para que recibo,
+                // histórico e relatório leiam o mesmo valor (sem divergir por arredondamento).
+                // Em long: o limite é checado antes de gravar, então o cast para int é seguro.
+                var subtotal = CalculoItem.Total(mercadoria.Unidade, item.Quantidade, mercadoria.PrecoVenda);
+                var custo = CalculoItem.Total(mercadoria.Unidade, item.Quantidade, mercadoria.PrecoCusto);
+                totalCentavos += subtotal;
+
+                if (totalCentavos > int.MaxValue || custo > int.MaxValue)
+                    return await Cancelar(transaction,
+                        "O valor total da venda excede o limite suportado.", cancellationToken);
 
                 context.ItensVenda.Add(new ItemVenda
                 {
                     VendaId = venda.Id,
                     MercadoriaId = mercadoria.Id,
-                    Quantidade = item.Quantidade,
-                    PrecoUnitario = mercadoria.PrecoVenda, // congela preço
-                    PrecoCusto = mercadoria.PrecoCusto     // congela custo
+                    Quantidade = item.Quantidade,           // contagem, ou gramas se por peso
+                    Unidade = mercadoria.Unidade,           // congela a unidade
+                    PrecoUnitario = mercadoria.PrecoVenda,  // congela preço
+                    PrecoCusto = mercadoria.PrecoCusto,     // congela custo
+                    SubtotalCentavos = (int)subtotal,
+                    CustoCentavos = (int)custo
                 });
-                totalCentavos += (long)item.Quantidade * mercadoria.PrecoVenda;
             }
 
             if (totalCentavos > int.MaxValue)

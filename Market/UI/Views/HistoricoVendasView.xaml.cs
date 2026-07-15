@@ -59,14 +59,8 @@ public partial class HistoricoVendasView : UserControl
 
         try
         {
-            var itens = await _servico.ObterItensAsync(venda.Id);
-            GridItens.ItemsSource = itens.Select(i => new
-            {
-                i.Nome,
-                i.Quantidade,
-                PrecoTexto = Moeda.ParaTexto(i.PrecoUnitarioCentavos),
-                SubtotalTexto = Moeda.ParaTexto(i.SubtotalCentavos)
-            }).ToList();
+            // ReciboItem já expõe os textos formatados conforme a unidade do item.
+            GridItens.ItemsSource = await _servico.ObterItensAsync(venda.Id);
             TxtDetalheCabecalho.Text = $"Itens da venda #{venda.Id}";
         }
         catch (Exception ex)
