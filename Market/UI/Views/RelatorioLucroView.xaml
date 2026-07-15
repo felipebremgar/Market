@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ctrls="clr-namespace:Market.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="600">
     <UserControl.Resources>
         <Style TargetType="Border" x:Key="Cartao">
@@ -30,6 +31,10 @@
                         VerticalAlignment="Bottom" Click="BtnGerar_Click"/>
                 <Button x:Name="BtnLimpar" Content="Limpar" Width="90" Height="32"
                         Margin="10,0,0,0" VerticalAlignment="Bottom" Click="BtnLimpar_Click"/>
+                <Button x:Name="BtnExportarPdf" Content="Exportar PDF" Width="120" Height="32"
+                        Margin="20,0,0,0" VerticalAlignment="Bottom" Click="BtnExportarPdf_Click"/>
+                <Button x:Name="BtnExportarExcel" Content="Exportar Excel" Width="120" Height="32"
+                        Margin="10,0,0,0" VerticalAlignment="Bottom" Click="BtnExportarExcel_Click"/>
             </StackPanel>
         </Border>
 
@@ -62,6 +67,14 @@
                 </StackPanel>
             </Border>
         </Grid>
+
+        <!-- Gráfico de lucro por dia -->
+        <Border DockPanel.Dock="Top" Background="#F5F6F8" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+            <DockPanel Height="180">
+                <TextBlock DockPanel.Dock="Top" Text="Lucro por dia" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <ctrls:GraficoBarras x:Name="Grafico"/>
+            </DockPanel>
+        </Border>
 
         <!-- Detalhamentos -->
         <Grid>

@@ -4,6 +4,19 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [2.0.0] — Relatórios avançados
+
+### Adicionado
+- Exportação do relatório de lucros em **PDF** (QuestPDF) e **Excel** (ClosedXML),
+  via `RelatorioExportador` e diálogo de salvar arquivo.
+- **Gráfico de barras** de lucro por dia no relatório (controle nativo `GraficoBarras`,
+  sem dependências — barras verdes/vermelhas com linha de base no zero).
+- Total somado do período no histórico de vendas.
+
+### Alterado
+- Dependências novas: QuestPDF e ClosedXML.
+- Versão do app para 2.0.0.
+
 ## [1.10.0] — Recibos
 
 ### Adicionado

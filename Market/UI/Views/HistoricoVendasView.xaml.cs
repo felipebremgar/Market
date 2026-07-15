@@ -36,7 +36,8 @@ public partial class HistoricoVendasView : UserControl
         {
             var vendas = await _servico.BuscarVendasAsync(filtro);
             GridVendas.ItemsSource = vendas;
-            TxtContador.Text = $"{vendas.Count} venda(s)";
+            var totalCentavos = vendas.Sum(v => (long)v.ValorTotal);
+            TxtContador.Text = $"{vendas.Count} venda(s)  ·  Total do período: {Moeda.ParaTexto(totalCentavos)}";
             GridItens.ItemsSource = null;
             TxtDetalheCabecalho.Text = "Itens da venda";
         }
