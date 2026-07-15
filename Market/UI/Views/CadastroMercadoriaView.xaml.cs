@@ -1,8 +1,10 @@
 using System.Globalization;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
+using Market.Domain;
 using Market.Domain.Repositories;
 using Market.UI.Controls;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,11 @@ public partial class CadastroMercadoriaView : UserControl
         _servico = servico;
         _repositorio = repositorio;
         _logger = logger;
+
+        // Selecionar tudo ao focar evita o "0" inicial ficar na frente do número digitado.
+        EntradaNumerica.SelecionarTudoAoFocar(TxtQuantidade, TxtPrecoCusto, TxtPrecoVenda, TxtMargem);
+        // Validade de produto novo não pode ser no passado.
+        DtValidade.DisplayDateStart = DateTime.Today;
 
         // Foco inicial no campo de código de barras (fluxo com leitor).
         Loaded += (_, _) => TxtCodigoBarras.Focus();
@@ -92,6 +99,13 @@ public partial class CadastroMercadoriaView : UserControl
             return;
         }
 
+        if (ChkPossuiValidade.IsChecked == true && DtValidade.SelectedDate is DateTime validade
+            && validade.Date < DateTime.Today)
+        {
+            MostrarErro("A validade não pode ser uma data no passado.");
+            return;
+        }
+
         // Parse dos campos numéricos: formato inválido vira erro visível — nunca é
         // convertido silenciosamente para 0 (evita salvar preço "abc" como R$ 0,00).
         var errosFormato = new List<string>();
@@ -103,6 +117,16 @@ public partial class CadastroMercadoriaView : UserControl
         {
             MostrarErro(string.Join(Environment.NewLine, errosFormato));
             return;
+        }
+
+        // Margem negativa (venda abaixo do custo): avisa e pede confirmação — não bloqueia.
+        if (custoReais > 0 && vendaReais < custoReais)
+        {
+            var confirmar = MessageBox.Show(
+                $"O preço de venda ({vendaReais:C}) está abaixo do custo ({custoReais:C}) — margem negativa.\n\nDeseja salvar assim mesmo?",
+                "Margem negativa", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirmar != MessageBoxResult.Yes)
+                return;
         }
 
         var dados = new CadastroMercadoriaDados
@@ -147,6 +171,47 @@ public partial class CadastroMercadoriaView : UserControl
         LimparMensagem();
     }
 
+    // ----- Precificação -----
+
+    private void BtnSugerir_Click(object sender, RoutedEventArgs e)
+    {
+        var custo = EntradaNumerica.ParseReaisOpcional(TxtPrecoCusto.Text);
+        if (custo is not decimal c || c <= 0)
+        {
+            MostrarAviso("Informe o preço de custo para sugerir o preço de venda.");
+            return;
+        }
+
+        var margem = EntradaNumerica.ParseInteiroOpcional(TxtMargem.Text) ?? 0;
+        var vendaCentavos = Precificacao.PrecoSugeridoCentavos(Moeda.ParaCentavos(c), margem);
+        TxtPrecoVenda.Text = Moeda.ParaReais(vendaCentavos).ToString("0.00"); // TextChanged recalcula a margem
+    }
+
+    private void Preco_TextChanged(object sender, TextChangedEventArgs e) => AtualizarMargemAtual();
+
+    private void AtualizarMargemAtual()
+    {
+        // TextChanged pode disparar durante o InitializeComponent, antes de TxtMargemAtual existir.
+        if (TxtMargemAtual is null) return;
+
+        var custo = EntradaNumerica.ParseReaisOpcional(TxtPrecoCusto.Text);
+        var venda = EntradaNumerica.ParseReaisOpcional(TxtPrecoVenda.Text);
+        if (custo is not decimal c || venda is not decimal v || c <= 0)
+        {
+            TxtMargemAtual.Text = string.Empty;
+            return;
+        }
+
+        var margem = Precificacao.MargemPercent(Moeda.ParaCentavos(c), Moeda.ParaCentavos(v));
+        if (margem is null) { TxtMargemAtual.Text = string.Empty; return; }
+
+        var negativa = v < c;
+        TxtMargemAtual.Text = negativa ? $"⚠ Margem negativa: {margem:0.#}%" : $"Margem: {margem:0.#}%";
+        TxtMargemAtual.Foreground = new SolidColorBrush(negativa
+            ? Color.FromRgb(0xC6, 0x28, 0x28)
+            : Color.FromRgb(0x2E, 0x7D, 0x32));
+    }
+
     // ----- Auxiliares -----
 
     private void LimparCampos()
@@ -157,6 +222,7 @@ public partial class CadastroMercadoriaView : UserControl
         TxtPrecoCusto.Clear();
         TxtPrecoVenda.Clear();
         TxtQuantidade.Text = "0";
+        TxtMargem.Text = "25";
         ChkPossuiValidade.IsChecked = false;
         DtValidade.SelectedDate = null;
         TxtCodigoBarras.Focus();

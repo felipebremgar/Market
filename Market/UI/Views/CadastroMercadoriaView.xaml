@@ -44,14 +44,35 @@
                     <TextBlock Text="Preço de custo (R$)" Style="{StaticResource Rotulo}"/>
                     <TextBox x:Name="TxtPrecoCusto" MaxLength="12"
                              PreviewTextInput="Decimal_PreviewTextInput"
-                             DataObject.Pasting="Decimal_Pasting"/>
+                             DataObject.Pasting="Decimal_Pasting"
+                             TextChanged="Preco_TextChanged"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                     <TextBlock Text="Preço de venda (R$)" Style="{StaticResource Rotulo}"/>
                     <TextBox x:Name="TxtPrecoVenda" MaxLength="12"
                              PreviewTextInput="Decimal_PreviewTextInput"
-                             DataObject.Pasting="Decimal_Pasting"/>
+                             DataObject.Pasting="Decimal_Pasting"
+                             TextChanged="Preco_TextChanged"/>
                 </StackPanel>
+            </Grid>
+
+            <!-- Sugestão de preço por margem e margem atual -->
+            <Grid Margin="0,12,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Margem alvo (%)" VerticalAlignment="Center"
+                           Foreground="#4C566A" Margin="0,0,8,0"/>
+                <TextBox Grid.Column="1" x:Name="TxtMargem" Text="25" MaxLength="4"
+                         PreviewTextInput="Inteiro_PreviewTextInput"
+                         DataObject.Pasting="Inteiro_Pasting"/>
+                <Button Grid.Column="2" x:Name="BtnSugerir" Content="Sugerir preço de venda"
+                        Height="32" Margin="10,0,0,0" Padding="10,0" Click="BtnSugerir_Click"/>
+                <TextBlock Grid.Column="3" x:Name="TxtMargemAtual" VerticalAlignment="Center"
+                           Margin="16,0,0,0" FontWeight="SemiBold"/>
             </Grid>
 
             <TextBlock Text="Quantidade em estoque" Style="{StaticResource Rotulo}"/>

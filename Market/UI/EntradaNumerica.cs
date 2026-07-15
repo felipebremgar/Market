@@ -28,6 +28,29 @@ public static class EntradaNumerica
     public static void FiltrarInteiro(object sender, TextCompositionEventArgs e)
         => e.Handled = !e.Text.All(char.IsDigit);
 
+    // ----- Seleção ao focar -----
+
+    /// <summary>
+    /// Faz os campos selecionarem todo o conteúdo ao receber foco (teclado ou mouse),
+    /// para que a digitação substitua o valor atual — evita o bug do "0" inicial que
+    /// ficava na frente do número digitado (ex.: quantidade virava "05").
+    /// </summary>
+    public static void SelecionarTudoAoFocar(params TextBox[] campos)
+    {
+        foreach (var textBox in campos)
+        {
+            textBox.GotKeyboardFocus += (_, _) => textBox.SelectAll();
+            textBox.PreviewMouseLeftButtonDown += (_, e) =>
+            {
+                if (!textBox.IsKeyboardFocusWithin)
+                {
+                    e.Handled = true;   // impede o clique de posicionar o cursor
+                    textBox.Focus();    // dispara GotKeyboardFocus → SelectAll
+                }
+            };
+        }
+    }
+
     // ----- Filtros de colagem (DataObject.Pasting) -----
 
     public static void ColarDecimal(object sender, DataObjectPastingEventArgs e)

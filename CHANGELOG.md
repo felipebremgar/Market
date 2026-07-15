@@ -4,6 +4,22 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.6.0] — Cadastro de mercadorias inteligente
+
+### Adicionado
+- Sugestão de preço de venda por margem de lucro (%) editável (`Precificacao`).
+- Margem atual calculada e exibida ao vivo; aviso de margem negativa (venda abaixo
+  do custo) com confirmação ao salvar.
+- Validação: a validade de mercadoria nova não aceita data no passado (DatePicker +
+  checagem no salvar).
+
+### Corrigido
+- Bug ao digitar a quantidade: os campos numéricos passam a selecionar todo o conteúdo
+  ao receber foco, evitando o "0" inicial preso na frente do número (`SelecionarTudoAoFocar`).
+
+### Alterado
+- Versão do app para 1.6.0.
+
 ## [1.5.0] — Clientes: contato e edição
 
 ### Adicionado

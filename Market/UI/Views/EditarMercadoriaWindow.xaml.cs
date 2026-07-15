@@ -23,6 +23,9 @@ public partial class EditarMercadoriaWindow : Window
         InitializeComponent();
         _servico = servico;
         _logger = logger;
+
+        // Selecionar tudo ao focar evita o "0" inicial ficar na frente do número digitado.
+        EntradaNumerica.SelecionarTudoAoFocar(TxtQuantidade, TxtPrecoCusto, TxtPrecoVenda);
     }
 
     /// <summary>Pré-preenche o formulário com os dados da mercadoria a editar.</summary>
