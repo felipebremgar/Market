@@ -75,7 +75,7 @@
                            Margin="16,0,0,0" FontWeight="SemiBold"/>
             </Grid>
 
-            <TextBlock Text="Quantidade em estoque" Style="{StaticResource Rotulo}"/>
+            <TextBlock Text="Quantidade" Style="{StaticResource Rotulo}"/>
             <TextBox x:Name="TxtQuantidade" MaxLength="7" Text="0"
                      PreviewTextInput="Inteiro_PreviewTextInput"
                      DataObject.Pasting="Inteiro_Pasting"/>

@@ -4,6 +4,25 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [2.2.0] — Máscara de CPF e correção da lista de clientes
+
+### Adicionado
+- Máscara de CPF (000.000.000-00) nos campos exclusivos de CPF: cadastro/edição de
+  cliente, busca de clientes e filtro do histórico. Aceita só dígitos, formata enquanto
+  digita e preserva o cursor. O campo "Cliente" do PDV ficou de fora de propósito —
+  ele aceita CPF **ou** nome, e a máscara quebraria a busca por nome.
+
+### Corrigido
+- A listagem de clientes não refletia o cadastro novo quando havia um filtro de busca
+  ativo: o refresh reaplicava o filtro e escondia o cliente recém-criado. Agora o
+  cadastro limpa os filtros antes de recarregar.
+- A atualização era "fire-and-forget" (sem `await`), tornando o momento do refresh
+  não-determinístico e engolindo falhas; agora é aguardada.
+
+### Adicionado
+- Após cadastrar/editar, o cliente é selecionado e trazido para a visão (`ScrollIntoView`),
+  com notificação de sucesso — confirmação visual de que a lista atualizou.
+
 ## [2.1.0] — Instalação limpa (sem dados de teste)
 
 ### Removido

@@ -22,6 +22,7 @@ public partial class ClientesView : UserControl
         _servico = servico;
         _services = services;
         _logger = logger;
+        MascaraCpf.Aplicar(BuscaCpf);
         Loaded += async (_, _) => await BuscarAsync();
     }
 
@@ -57,18 +58,27 @@ public partial class ClientesView : UserControl
         await BuscarAsync();
     }
 
-    private void BtnNovo_Click(object sender, RoutedEventArgs e)
+    private void BtnNovo_Click(object sender, RoutedEventArgs e) => _ = CadastrarAsync();
+
+    private async Task CadastrarAsync()
     {
         var janela = _services.GetRequiredService<CadastrarClienteWindow>();
         janela.Owner = Window.GetWindow(this);
         janela.ShowDialog();
-        if (janela.Salvou)
-            _ = BuscarAsync();
+        if (!janela.Salvou) return;
+
+        // Um filtro ativo esconderia o cliente recém-cadastrado: limpa antes de recarregar.
+        BuscaCpf.Clear();
+        BuscaNome.Clear();
+        await BuscarAsync();
+
+        DestacarCliente(janela.ClienteCpf);
+        Notificacao.Sucesso($"Cliente {janela.ClienteNome} cadastrado.", autoDismiss: true);
     }
 
-    private void BtnEditar_Click(object sender, RoutedEventArgs e) => EditarSelecionado();
+    private void BtnEditar_Click(object sender, RoutedEventArgs e) => _ = EditarSelecionadoAsync();
 
-    private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e) => EditarSelecionado();
+    private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e) => _ = EditarSelecionadoAsync();
 
     private void Grid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -80,7 +90,7 @@ public partial class ClientesView : UserControl
             linha.IsSelected = true;
     }
 
-    private void EditarSelecionado()
+    private async Task EditarSelecionadoAsync()
     {
         if (Grid.SelectedItem is not Cliente cliente)
         {
@@ -92,8 +102,21 @@ public partial class ClientesView : UserControl
         janela.Owner = Window.GetWindow(this);
         janela.CarregarParaEdicao(cliente);
         janela.ShowDialog();
-        if (janela.Salvou)
-            _ = BuscarAsync();
+        if (!janela.Salvou) return;
+
+        // Mantém o filtro atual na edição (a linha já estava visível) e reposiciona a seleção.
+        await BuscarAsync();
+        DestacarCliente(cliente.Cpf);
+    }
+
+    /// <summary>Seleciona e rola até o cliente informado, confirmando visualmente a atualização.</summary>
+    private void DestacarCliente(string? cpf)
+    {
+        if (string.IsNullOrWhiteSpace(cpf)) return;
+        var alvo = Grid.Items.OfType<Cliente>().FirstOrDefault(c => c.Cpf == cpf);
+        if (alvo is null) return;
+        Grid.SelectedItem = alvo;
+        Grid.ScrollIntoView(alvo);
     }
 
     private static string? Nulo(string texto) => string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();

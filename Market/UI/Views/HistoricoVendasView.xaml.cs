@@ -26,6 +26,7 @@ public partial class HistoricoVendasView : UserControl
         _fiado = fiado;
         _vendas = vendas;
         _logger = logger;
+        MascaraCpf.Aplicar(FiltroCliente);
         Loaded += async (_, _) => await CarregarAsync(FiltroVenda.Nenhum);
     }
 

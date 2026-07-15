@@ -29,6 +29,7 @@ public partial class CadastrarClienteWindow : Window
         InitializeComponent();
         _servico = servico;
         _logger = logger;
+        MascaraCpf.Aplicar(TxtCpf);
         Loaded += (_, _) => (string.IsNullOrEmpty(TxtCpf.Text) ? (Control)TxtCpf : TxtNome).Focus();
     }
 
