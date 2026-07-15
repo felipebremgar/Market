@@ -18,4 +18,7 @@ public record VendaResumo(
         StatusPagamento.Pago => "Pago",
         _ => "—"
     };
+
+    /// <summary>Venda fiada ainda não paga — elegível para dar baixa.</summary>
+    public bool PodeReceberBaixa => Forma == FormaPagamento.Fiado && Status == StatusPagamento.Pendente;
 }

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Market.Application.Services;
 using Market.Domain;
 using Market.UI.Controls;
@@ -11,18 +12,23 @@ namespace Market.UI.Views;
 public partial class HistoricoVendasView : UserControl
 {
     private readonly HistoricoService _servico;
+    private readonly FiadoService _fiado;
     private readonly ILogger<HistoricoVendasView> _logger;
 
-    public HistoricoVendasView(HistoricoService servico, ILogger<HistoricoVendasView> logger)
+    private FiltroVenda _filtroAtual = FiltroVenda.Nenhum;
+
+    public HistoricoVendasView(HistoricoService servico, FiadoService fiado, ILogger<HistoricoVendasView> logger)
     {
         InitializeComponent();
         _servico = servico;
+        _fiado = fiado;
         _logger = logger;
         Loaded += async (_, _) => await CarregarAsync(FiltroVenda.Nenhum);
     }
 
     private async Task CarregarAsync(FiltroVenda filtro)
     {
+        _filtroAtual = filtro;
         try
         {
             var vendas = await _servico.BuscarVendasAsync(filtro);
@@ -63,6 +69,50 @@ public partial class HistoricoVendasView : UserControl
             _logger.LogError(ex, "Falha ao carregar itens da venda {Id}.", venda.Id);
             MostrarErro("Não foi possível carregar os itens da venda.");
         }
+    }
+
+    // ----- Baixa de fiado -----
+
+    private async void BtnBaixa_Click(object sender, RoutedEventArgs e)
+    {
+        if (GridVendas.SelectedItem is not VendaResumo venda)
+        {
+            Notificacao.Aviso("Selecione uma venda fiada pendente para dar baixa.", autoDismiss: true);
+            return;
+        }
+        if (!venda.PodeReceberBaixa)
+        {
+            Notificacao.Aviso("Esta venda não é um fiado pendente.", autoDismiss: true);
+            return;
+        }
+
+        var confirmar = MessageBox.Show(
+            $"Confirmar o pagamento da venda #{venda.Id} ({venda.TotalTexto}) de {venda.ClienteTexto}?\n\nA baixa será registrada com a data de hoje.",
+            "Dar baixa no fiado", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (confirmar != MessageBoxResult.Yes) return;
+
+        await BotaoOcupado.ExecutarAsync(BtnBaixa, "Processando…", async () =>
+        {
+            var resultado = await _fiado.DarBaixaAsync(venda.Id);
+            if (resultado.Sucesso)
+            {
+                await CarregarAsync(_filtroAtual);
+                Notificacao.Sucesso($"Baixa registrada na venda #{venda.Id}.", autoDismiss: true);
+            }
+            else
+            {
+                Notificacao.Erro(resultado.MensagemErro);
+            }
+        });
+    }
+
+    private void GridVendas_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        var origem = e.OriginalSource as DependencyObject;
+        while (origem is not null and not DataGridRow)
+            origem = VisualTreeHelper.GetParent(origem);
+        if (origem is DataGridRow linha)
+            linha.IsSelected = true;
     }
 
     private async void BtnFiltrar_Click(object sender, RoutedEventArgs e)

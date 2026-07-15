@@ -1,5 +1,7 @@
 using Market.Application.Services;
+using Market.Domain;
 using Market.Tests.Infra;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Market.Tests.Application;
 
@@ -100,6 +102,28 @@ public class RelatorioServiceTests
 
         Assert.Equal(1000, resumo.ReceitaTotalCentavos); // preço congelado, não 9999
         Assert.Equal(600, resumo.CustoTotalCentavos);
+    }
+
+    // v1.9 — fiado pendente não conta no lucro; após a baixa, passa a contar
+    [Fact]
+    public async Task Fiado_pendente_nao_entra_no_lucro_ate_a_baixa()
+    {
+        using var banco = new BancoDeTeste();
+        banco.CriarCliente("52998224725", "Maria");
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 1000, precoCusto: 600);
+        var venda = new VendaService(banco, NullLogger<VendaService>.Instance);
+        var venc = DateOnly.FromDateTime(DateTime.Today.AddDays(30));
+        var r = await venda.FinalizarVendaAsync(
+            "52998224725", new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Fiado, venc);
+
+        var antes = await CriarServico(banco).ResumoAsync(null, null);
+        Assert.Equal(0, antes.ReceitaTotalCentavos); // pendente: não conta
+
+        await new FiadoService(banco, NullLogger<FiadoService>.Instance).DarBaixaAsync(r.IdGerado!.Value);
+
+        var depois = await CriarServico(banco).ResumoAsync(null, null);
+        Assert.Equal(1000, depois.ReceitaTotalCentavos); // após a baixa: conta
+        Assert.Equal(600, depois.CustoTotalCentavos);
     }
 
     // T49 — período sem vendas => zeros

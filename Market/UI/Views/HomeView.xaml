@@ -3,17 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:ctrls="clr-namespace:Market.UI.Controls"
              mc:Ignorable="d">
-    <StackPanel Margin="24">
-        <TextBlock Text="Mercadinho — Sistema de Logística"
-                   FontSize="22" FontWeight="Bold"/>
-        <TextBlock Text="Bem-vindo! Use o menu à esquerda para navegar."
-                   FontSize="14" Foreground="Gray" Margin="0,4,0,16"/>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <TextBlock Text="Mercadinho — Sistema de Logística"
+                       FontSize="22" FontWeight="Bold"/>
+            <TextBlock Text="Bem-vindo! Use o menu à esquerda para navegar."
+                       FontSize="14" Foreground="Gray" Margin="0,4,0,16"/>
 
-        <Separator Margin="0,20"/>
-        <TextBlock Text="Manutenção" FontWeight="SemiBold"/>
-        <Button x:Name="BtnBackup" Content="Fazer backup do banco" Width="200" Height="34"
-                HorizontalAlignment="Left" Margin="0,8,0,0" Click="BtnBackup_Click"/>
-        <TextBlock x:Name="TxtBackup" Foreground="#2E7D32" Margin="0,8,0,0" TextWrapping="Wrap"/>
-    </StackPanel>
+            <TextBlock Text="Vendas fiadas — agenda de vencimentos"
+                       FontWeight="SemiBold" FontSize="16" Margin="0,0,0,6"/>
+            <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,0,0,8"/>
+            <Grid Height="220">
+                <DataGrid x:Name="GridFiados" AutomationProperties.AutomationId="GridFiados"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                          SelectionMode="Single" HeadersVisibility="Column"
+                          GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Vencido}" Value="True">
+                                    <Setter Property="Background" Value="#FDECEA"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGrid.RowStyle>
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Cliente" Binding="{Binding ClienteTexto}" Width="*"/>
+                        <DataGridTextColumn Header="Valor" Binding="{Binding ValorTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Vencimento" Binding="{Binding VencimentoTexto}" Width="Auto"/>
+                        <DataGridTextColumn Header="Situação" Binding="{Binding SituacaoTexto}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <TextBlock Style="{StaticResource EmptyState}" Text="Nenhuma venda fiada pendente."
+                           Visibility="{Binding HasItems, ElementName=GridFiados, Converter={StaticResource BoolInverteVis}}"/>
+            </Grid>
+
+            <Separator Margin="0,20"/>
+            <TextBlock Text="Manutenção" FontWeight="SemiBold"/>
+            <Button x:Name="BtnBackup" Content="Fazer backup do banco" Width="200" Height="34"
+                    HorizontalAlignment="Left" Margin="0,8,0,0" Click="BtnBackup_Click"/>
+            <TextBlock x:Name="TxtBackup" Foreground="#2E7D32" Margin="0,8,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

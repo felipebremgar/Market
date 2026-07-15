@@ -49,13 +49,23 @@
             </Grid.ColumnDefinitions>
 
             <DockPanel Grid.Column="0">
-                <TextBlock DockPanel.Dock="Top" Text="Vendas" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
+                    <TextBlock Text="Vendas" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <Button x:Name="BtnBaixa" Content="Dar baixa (fiado)" HorizontalAlignment="Right"
+                            Height="26" Padding="10,0" Click="BtnBaixa_Click"/>
+                </Grid>
                 <Grid>
                 <DataGrid x:Name="GridVendas" AutomationProperties.AutomationId="GridVendas"
                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                           SelectionMode="Single" HeadersVisibility="Column"
                           GridLinesVisibility="Horizontal" RowHeaderWidth="0"
-                          SelectionChanged="GridVendas_SelectionChanged">
+                          SelectionChanged="GridVendas_SelectionChanged"
+                          PreviewMouseRightButtonDown="GridVendas_PreviewMouseRightButtonDown">
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Dar baixa (fiado)" Click="BtnBaixa_Click"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Nº" Binding="{Binding Id}" Width="Auto"/>
                         <DataGridTextColumn Header="Data" Binding="{Binding DataTexto}" Width="Auto"/>

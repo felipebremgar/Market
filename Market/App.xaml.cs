@@ -121,6 +121,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Application.Services.PdvService>();
         services.AddTransient<Application.Services.HistoricoService>();
         services.AddTransient<Application.Services.RelatorioService>();
+        services.AddTransient<Application.Services.FiadoService>();
 
         services.AddSingleton<MigrationRunner>();
         services.AddSingleton<DatabaseInitializer>();

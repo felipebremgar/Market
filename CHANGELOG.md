@@ -4,6 +4,18 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.9.0] — Venda fiada (baixa e alertas)
+
+### Adicionado
+- Dar baixa nas vendas fiadas pelo histórico (botão e menu de contexto): marca a venda
+  como paga e grava a data (`FiadoService.DarBaixaAsync`).
+- Tela inicial: agenda das vendas fiadas pendentes (ordenada por vencimento, vencidas em
+  destaque) e notificação de vencidas / a vencer nos próximos 7 dias.
+
+### Alterado
+- Relatório de lucros passa a **excluir fiados pendentes**: só entram após a baixa.
+- Versão do app para 1.9.0.
+
 ## [1.8.0] — Venda fiada (registro)
 
 ### Adicionado

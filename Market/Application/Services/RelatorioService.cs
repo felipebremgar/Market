@@ -81,6 +81,9 @@ public class RelatorioService
     {
         var query = context.ItensVenda.AsNoTracking().AsQueryable();
 
+        // Fiado pendente não entra no lucro: só conta depois da baixa (quando vira Pago).
+        query = query.Where(i => i.Venda.Status != StatusPagamento.Pendente);
+
         if (dataIni is DateOnly ini)
             query = query.Where(i => i.Venda.DataVenda >= ini.ToDateTime(TimeOnly.MinValue));
         if (dataFim is DateOnly fim)
