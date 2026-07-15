@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Market.Application.Services;
+using Market.Domain;
 using Market.UI.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -60,6 +61,36 @@ public partial class ClientesView : UserControl
     {
         var janela = _services.GetRequiredService<CadastrarClienteWindow>();
         janela.Owner = Window.GetWindow(this);
+        janela.ShowDialog();
+        if (janela.Salvou)
+            _ = BuscarAsync();
+    }
+
+    private void BtnEditar_Click(object sender, RoutedEventArgs e) => EditarSelecionado();
+
+    private void Grid_MouseDoubleClick(object sender, MouseButtonEventArgs e) => EditarSelecionado();
+
+    private void Grid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Seleciona a linha sob o cursor para o menu de contexto agir sobre ela.
+        var origem = e.OriginalSource as DependencyObject;
+        while (origem is not null and not DataGridRow)
+            origem = VisualTreeHelper.GetParent(origem);
+        if (origem is DataGridRow linha)
+            linha.IsSelected = true;
+    }
+
+    private void EditarSelecionado()
+    {
+        if (Grid.SelectedItem is not Cliente cliente)
+        {
+            Notificacao.Aviso("Selecione um cliente para editar.", autoDismiss: true);
+            return;
+        }
+
+        var janela = _services.GetRequiredService<CadastrarClienteWindow>();
+        janela.Owner = Window.GetWindow(this);
+        janela.CarregarParaEdicao(cliente);
         janela.ShowDialog();
         if (janela.Salvou)
             _ = BuscarAsync();

@@ -31,15 +31,22 @@ public class MigrationRunnerTests
         Assert.Equal(0, MigrationRunner.LerUserVersion(connection));
     }
 
+    // Migrações sintéticas para testar a mecânica do runner sem depender do DDL real.
+    private static readonly IReadOnlyList<Migration> Sinteticas = new[]
+    {
+        new Migration(1, "base", "CREATE TABLE T1 (Id INTEGER);"),
+        new Migration(2, "segunda", "CREATE TABLE T2 (Id INTEGER);"),
+    };
+
     [Fact]
-    public void Aplicar_eleva_banco_antigo_ate_a_versao_alvo()
+    public void Aplicar_eleva_banco_antigo_ate_a_ultima_versao()
     {
         using var connection = AbrirBancoEmMemoria();
 
-        var versaoFinal = CriarRunner().Aplicar(connection);
+        var versaoFinal = CriarRunner().Aplicar(connection, Sinteticas);
 
-        Assert.Equal(SchemaMigrations.VersaoAlvo, versaoFinal);
-        Assert.Equal(SchemaMigrations.VersaoAlvo, MigrationRunner.LerUserVersion(connection));
+        Assert.Equal(2, versaoFinal);
+        Assert.Equal(2, MigrationRunner.LerUserVersion(connection));
     }
 
     [Fact]
@@ -48,10 +55,37 @@ public class MigrationRunnerTests
         using var connection = AbrirBancoEmMemoria();
         var runner = CriarRunner();
 
-        runner.Aplicar(connection);
-        var segundaExecucao = runner.Aplicar(connection); // não deve reprocessar nada
+        runner.Aplicar(connection, Sinteticas);
+        var segundaExecucao = runner.Aplicar(connection, Sinteticas); // não deve reprocessar nada
 
-        Assert.Equal(SchemaMigrations.VersaoAlvo, segundaExecucao);
+        Assert.Equal(2, segundaExecucao);
+    }
+
+    [Fact]
+    public void Migracoes_reais_elevam_banco_v1_ate_o_alvo_adicionando_Contato()
+    {
+        using var connection = AbrirBancoEmMemoria();
+        // Simula um banco criado antes da v1.5 (Cliente sem a coluna Contato), na versão 1.
+        using (var cmd = connection.CreateCommand())
+        {
+            cmd.CommandText =
+                "CREATE TABLE Cliente (Cpf TEXT PRIMARY KEY, Nome TEXT NOT NULL);" +
+                "PRAGMA user_version = 1;";
+            cmd.ExecuteNonQuery();
+        }
+
+        var versaoFinal = CriarRunner().Aplicar(connection); // migrações reais
+
+        Assert.Equal(SchemaMigrations.VersaoAlvo, versaoFinal);
+        Assert.True(ColunaExiste(connection, "Cliente", "Contato"));
+    }
+
+    private static bool ColunaExiste(SqliteConnection connection, string tabela, string coluna)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT COUNT(*) FROM pragma_table_info('{tabela}') WHERE name = $c;";
+        command.Parameters.AddWithValue("$c", coluna);
+        return Convert.ToInt32(command.ExecuteScalar()) > 0;
     }
 
     [Fact]

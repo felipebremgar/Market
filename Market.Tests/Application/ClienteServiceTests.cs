@@ -91,4 +91,57 @@ public class ClienteServiceTests
         Assert.Single(encontrados);
         Assert.Equal(CpfValido, encontrados[0].Cpf);
     }
+
+    [Fact]
+    public async Task Cadastro_com_contato_valido_persiste()
+    {
+        using var banco = new BancoDeTeste();
+        var servico = CriarServico(banco);
+
+        var resultado = await servico.CadastrarAsync(CpfValido, "Maria", "maria@email.com");
+
+        Assert.True(resultado.Sucesso);
+        using var context = banco.CreateDbContext();
+        Assert.Equal("maria@email.com", context.Clientes.Single().Contato);
+    }
+
+    [Fact]
+    public async Task Cadastro_com_contato_invalido_e_rejeitado()
+    {
+        using var banco = new BancoDeTeste();
+        var servico = CriarServico(banco);
+
+        var resultado = await servico.CadastrarAsync(CpfValido, "Maria", "@@@");
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, e => e.Contains("Contato"));
+    }
+
+    [Fact]
+    public async Task Atualizar_altera_nome_e_contato()
+    {
+        using var banco = new BancoDeTeste();
+        var servico = CriarServico(banco);
+        await servico.CadastrarAsync(CpfValido, "Nome Antigo");
+
+        var resultado = await servico.AtualizarAsync(CpfValido, "Nome Novo", "9299998888");
+
+        Assert.True(resultado.Sucesso);
+        using var context = banco.CreateDbContext();
+        var cliente = context.Clientes.Single();
+        Assert.Equal("Nome Novo", cliente.Nome);
+        Assert.Equal("9299998888", cliente.Contato);
+    }
+
+    [Fact]
+    public async Task Atualizar_cliente_inexistente_falha()
+    {
+        using var banco = new BancoDeTeste();
+        var servico = CriarServico(banco);
+
+        var resultado = await servico.AtualizarAsync(CpfValido, "Fulano", null);
+
+        Assert.False(resultado.Sucesso);
+        Assert.Contains(resultado.Erros, e => e.Contains("não encontrado"));
+    }
 }

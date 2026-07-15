@@ -45,6 +45,61 @@ public class DatabaseInitializerTests
     }
 
     [Fact]
+    public void Initialize_migra_banco_v1_existente_preservando_dados()
+    {
+        var dbPath = Path.Combine(Path.GetTempPath(), $"market-mig-{Guid.NewGuid():N}.db");
+        var cs = new SqliteConnectionStringBuilder { DataSource = dbPath }.ToString();
+        try
+        {
+            // Monta um banco no estado v1: schema completo, mas sem a coluna Contato,
+            // com um cliente já cadastrado e user_version = 1.
+            using (var conn = new SqliteConnection(cs))
+            {
+                conn.Open();
+                var schema = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "schema.sql"));
+                Executar(conn, schema);
+                Executar(conn,
+                    "ALTER TABLE Cliente DROP COLUMN Contato;" +
+                    "INSERT INTO Cliente (Cpf, Nome) VALUES ('52998224725','Ana');" +
+                    "PRAGMA user_version = 1;");
+            }
+            SqliteConnection.ClearAllPools();
+
+            // Roda o Initialize real: como o schema já existe, apenas aplica a migração.
+            Criar(dbPath).Initialize();
+
+            using (var conn = new SqliteConnection(cs))
+            {
+                conn.Open();
+                Assert.Equal(SchemaMigrations.VersaoAlvo, MigrationRunner.LerUserVersion(conn));
+                Assert.Equal(1, Escalar(conn,
+                    "SELECT COUNT(*) FROM pragma_table_info('Cliente') WHERE name='Contato';"));
+                Assert.Equal("Ana", Escalar(conn, "SELECT Nome FROM Cliente WHERE Cpf='52998224725';"));
+            }
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (File.Exists(dbPath)) File.Delete(dbPath);
+        }
+    }
+
+    private static void Executar(SqliteConnection conn, string sql)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        cmd.ExecuteNonQuery();
+    }
+
+    private static object? Escalar(SqliteConnection conn, string sql)
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = sql;
+        var v = cmd.ExecuteScalar();
+        return v is long l ? (int)l : v;
+    }
+
+    [Fact]
     public void Initialize_deixa_o_banco_na_versao_de_schema_alvo()
     {
         var dbPath = Path.Combine(Path.GetTempPath(), $"market-init-{Guid.NewGuid():N}.db");

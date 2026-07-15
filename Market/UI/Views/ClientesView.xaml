@@ -33,6 +33,8 @@
                             Margin="10,0,0,0" Click="BtnLimpar_Click"/>
                     <Button x:Name="BtnNovo" Content="Novo cliente" Width="130" Height="32"
                             Margin="10,0,0,0" Click="BtnNovo_Click"/>
+                    <Button x:Name="BtnEditar" Content="Editar" Width="110" Height="32"
+                            Margin="10,0,0,0" Click="BtnEditar_Click"/>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -43,10 +45,18 @@
         <DataGrid x:Name="Grid" AutomationProperties.AutomationId="GridClientes"
                   AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" SelectionMode="Single"
-                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0">
+                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeaderWidth="0"
+                  MouseDoubleClick="Grid_MouseDoubleClick"
+                  PreviewMouseRightButtonDown="Grid_PreviewMouseRightButtonDown">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Editar" Click="BtnEditar_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="CPF" Binding="{Binding Cpf}" Width="Auto"/>
                 <DataGridTextColumn Header="Nome" Binding="{Binding Nome}" Width="*"/>
+                <DataGridTextColumn Header="Contato" Binding="{Binding Contato}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
         <TextBlock Style="{StaticResource EmptyState}" Text="Nenhum cliente encontrado."

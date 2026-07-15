@@ -2,8 +2,9 @@ PRAGMA foreign_keys = ON;
 
 -- ---------- Cliente (CPF como PK, Nome obrigatório) ----------
 CREATE TABLE Cliente (
-    Cpf   TEXT NOT NULL PRIMARY KEY,
-    Nome  TEXT NOT NULL,
+    Cpf     TEXT NOT NULL PRIMARY KEY,
+    Nome    TEXT NOT NULL,
+    Contato TEXT NULL,
     CHECK (length(Cpf) = 11 AND Cpf NOT GLOB '*[^0-9]*')
 );
 CREATE INDEX IX_Cliente_Nome ON Cliente (Nome);
@@ -64,4 +65,4 @@ CREATE INDEX IX_ItemVenda_MercadoriaId ON ItemVenda (MercadoriaId);
 -- Bancos novos já nascem na versão de schema mais recente; o MigrationRunner só
 -- precisa atuar sobre bancos criados antes de uma migração. Mantenha este valor
 -- igual a SchemaMigrations.VersaoAlvo.
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;

@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ctrls="clr-namespace:Market.UI.Controls"
         mc:Ignorable="d"
-        Title="Novo Cliente" Height="300" Width="400"
+        Title="Novo Cliente" Height="380" Width="400"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
     <StackPanel Margin="20">
-        <TextBlock Text="Cadastro de Cliente" FontSize="18" FontWeight="Bold"/>
+        <TextBlock x:Name="TxtTitulo" Text="Cadastro de Cliente" FontSize="18" FontWeight="Bold"/>
 
         <TextBlock Text="CPF *" Margin="0,14,0,3" Foreground="#4C566A"/>
         <TextBox x:Name="TxtCpf" Height="30" Padding="6,3" VerticalContentAlignment="Center"
@@ -16,6 +16,10 @@
 
         <TextBlock Text="Nome *" Margin="0,12,0,3" Foreground="#4C566A"/>
         <TextBox x:Name="TxtNome" Height="30" Padding="6,3" VerticalContentAlignment="Center"
+                 MaxLength="120"/>
+
+        <TextBlock Text="Contato (telefone ou e-mail)" Margin="0,12,0,3" Foreground="#4C566A"/>
+        <TextBox x:Name="TxtContato" Height="30" Padding="6,3" VerticalContentAlignment="Center"
                  MaxLength="120"/>
 
         <ctrls:NotificationBanner x:Name="Notificacao" Margin="0,14,0,0"/>

@@ -13,6 +13,8 @@ public partial class CadastrarClienteWindow : Window
     private readonly ClienteService _servico;
     private readonly ILogger<CadastrarClienteWindow> _logger;
 
+    private bool _modoEdicao;
+
     /// <summary>True quando o cliente foi cadastrado (para o chamador atualizar/aproveitar).</summary>
     public bool Salvou { get; private set; }
 
@@ -33,13 +35,27 @@ public partial class CadastrarClienteWindow : Window
     /// <summary>Pré-preenche o CPF (usado no cadastro rápido do PDV).</summary>
     public void PreencherCpf(string cpf) => TxtCpf.Text = cpf;
 
+    /// <summary>Abre a janela em modo de edição, com os dados do cliente e o CPF travado.</summary>
+    public void CarregarParaEdicao(Cliente cliente)
+    {
+        _modoEdicao = true;
+        Title = "Editar Cliente";
+        TxtTitulo.Text = "Editar Cliente";
+        TxtCpf.Text = cliente.Cpf;
+        TxtCpf.IsReadOnly = true;
+        TxtNome.Text = cliente.Nome;
+        TxtContato.Text = cliente.Contato ?? string.Empty;
+    }
+
     private async void BtnSalvar_Click(object sender, RoutedEventArgs e)
     {
         try
         {
             await BotaoOcupado.ExecutarAsync(BtnSalvar, "Salvando…", async () =>
             {
-                var resultado = await _servico.CadastrarAsync(TxtCpf.Text, TxtNome.Text);
+                var resultado = _modoEdicao
+                    ? await _servico.AtualizarAsync(TxtCpf.Text, TxtNome.Text, TxtContato.Text)
+                    : await _servico.CadastrarAsync(TxtCpf.Text, TxtNome.Text, TxtContato.Text);
                 if (resultado.Sucesso)
                 {
                     Salvou = true;

@@ -28,7 +28,7 @@ public class ClienteService
         => _repositorio.BuscarAsync(Cpf.Normalizar(cpf), nome, cancellationToken);
 
     public async Task<ResultadoOperacao> CadastrarAsync(
-        string? cpf, string? nome, CancellationToken cancellationToken = default)
+        string? cpf, string? nome, string? contato = null, CancellationToken cancellationToken = default)
     {
         var erros = new List<string>();
 
@@ -40,6 +40,10 @@ public class ClienteService
         if (string.IsNullOrWhiteSpace(nomeNormalizado))
             erros.Add("O nome é obrigatório.");
 
+        var contatoNormalizado = Contato.Normalizar(contato);
+        if (!Contato.EhValido(contato))
+            erros.Add("Contato inválido. Informe um telefone ou e-mail.");
+
         if (erros.Count == 0 &&
             await _repositorio.CpfExisteAsync(cpfNormalizado, cancellationToken))
             erros.Add($"Já existe um cliente com o CPF {cpfNormalizado}.");
@@ -47,7 +51,7 @@ public class ClienteService
         if (erros.Count > 0)
             return ResultadoOperacao.Falha(erros);
 
-        var cliente = new Cliente { Cpf = cpfNormalizado, Nome = nomeNormalizado };
+        var cliente = new Cliente { Cpf = cpfNormalizado, Nome = nomeNormalizado, Contato = contatoNormalizado };
 
         try
         {
@@ -61,6 +65,38 @@ public class ClienteService
         }
 
         _logger.LogInformation("Cliente cadastrado: {Nome} ({Cpf}).", nomeNormalizado, cpfNormalizado);
+        return ResultadoOperacao.Ok();
+    }
+
+    /// <summary>Atualiza nome e contato de um cliente existente (o CPF é a chave e não muda).</summary>
+    public async Task<ResultadoOperacao> AtualizarAsync(
+        string? cpf, string? nome, string? contato, CancellationToken cancellationToken = default)
+    {
+        var erros = new List<string>();
+
+        var cpfNormalizado = Cpf.Normalizar(cpf);
+        if (!Cpf.EhValido(cpfNormalizado))
+            erros.Add("CPF inválido.");
+
+        var nomeNormalizado = nome?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(nomeNormalizado))
+            erros.Add("O nome é obrigatório.");
+
+        var contatoNormalizado = Contato.Normalizar(contato);
+        if (!Contato.EhValido(contato))
+            erros.Add("Contato inválido. Informe um telefone ou e-mail.");
+
+        if (erros.Count == 0 &&
+            !await _repositorio.CpfExisteAsync(cpfNormalizado, cancellationToken))
+            erros.Add("Cliente não encontrado.");
+
+        if (erros.Count > 0)
+            return ResultadoOperacao.Falha(erros);
+
+        var cliente = new Cliente { Cpf = cpfNormalizado, Nome = nomeNormalizado, Contato = contatoNormalizado };
+        await _repositorio.UpdateAsync(cliente, cancellationToken);
+
+        _logger.LogInformation("Cliente atualizado: {Nome} ({Cpf}).", nomeNormalizado, cpfNormalizado);
         return ResultadoOperacao.Ok();
     }
 }

@@ -4,6 +4,21 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.5.0] — Clientes: contato e edição
+
+### Adicionado
+- Contato opcional (telefone ou e-mail) no cliente, com validação (`Domain.Contato`).
+- Edição de cliente: a janela de cadastro passa a abrir em modo de edição (CPF travado),
+  acionável por botão, duplo-clique ou menu de contexto na lista.
+- Coluna Contato na listagem de clientes.
+- Migração de schema #2 (`ALTER TABLE Cliente ADD COLUMN Contato`) — primeira migração
+  incremental aplicada a bancos existentes via `PRAGMA user_version`.
+
+### Alterado
+- `ClienteService.CadastrarAsync` aceita contato; novo `AtualizarAsync`.
+- `schema.sql` cria `Cliente.Contato` e carimba `user_version = 2`.
+- Versão do app para 1.5.0.
+
 ## [1.4.0] — Polimento de UX
 
 ### Adicionado
