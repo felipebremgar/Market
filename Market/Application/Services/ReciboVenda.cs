@@ -1,3 +1,5 @@
+using Market.Domain;
+
 namespace Market.Application.Services;
 
 /// <summary>Recibo de uma venda concluída (dados persistidos, para exibição na tela).</summary>
@@ -7,7 +9,10 @@ public record ReciboVenda(
     string? ClienteNome,
     string? ClienteCpf,
     int TotalCentavos,
-    IReadOnlyList<ReciboItem> Itens);
+    IReadOnlyList<ReciboItem> Itens,
+    FormaPagamento? Forma = null,
+    StatusPagamento? Status = null,
+    DateOnly? DataVencimento = null);
 
 /// <summary>Linha do recibo, com valores congelados no momento da venda.</summary>
 public record ReciboItem(string Nome, int Quantidade, int PrecoUnitarioCentavos)

@@ -40,7 +40,8 @@ public class VendaService
             .ToList();
 
         return new ReciboVenda(
-            venda.Id, venda.DataVenda, venda.Cliente?.Nome, venda.ClienteCpf, venda.ValorTotal, itens);
+            venda.Id, venda.DataVenda, venda.Cliente?.Nome, venda.ClienteCpf, venda.ValorTotal, itens,
+            venda.Forma, venda.Status, venda.DataVencimento);
     }
 
     public async Task<ResultadoOperacao> FinalizarVendaAsync(

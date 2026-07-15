@@ -51,8 +51,12 @@
             <DockPanel Grid.Column="0">
                 <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
                     <TextBlock Text="Vendas" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                    <Button x:Name="BtnBaixa" Content="Dar baixa (fiado)" HorizontalAlignment="Right"
-                            Height="26" Padding="10,0" Click="BtnBaixa_Click"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="BtnRecibo" Content="Ver recibo" Height="26" Padding="10,0"
+                                Margin="0,0,8,0" Click="BtnRecibo_Click"/>
+                        <Button x:Name="BtnBaixa" Content="Dar baixa (fiado)" Height="26" Padding="10,0"
+                                Click="BtnBaixa_Click"/>
+                    </StackPanel>
                 </Grid>
                 <Grid>
                 <DataGrid x:Name="GridVendas" AutomationProperties.AutomationId="GridVendas"
@@ -60,9 +64,11 @@
                           SelectionMode="Single" HeadersVisibility="Column"
                           GridLinesVisibility="Horizontal" RowHeaderWidth="0"
                           SelectionChanged="GridVendas_SelectionChanged"
+                          MouseDoubleClick="GridVendas_DoubleClick"
                           PreviewMouseRightButtonDown="GridVendas_PreviewMouseRightButtonDown">
                     <DataGrid.ContextMenu>
                         <ContextMenu>
+                            <MenuItem Header="Ver recibo" Click="BtnRecibo_Click"/>
                             <MenuItem Header="Dar baixa (fiado)" Click="BtnBaixa_Click"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>

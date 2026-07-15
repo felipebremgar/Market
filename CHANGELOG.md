@@ -4,6 +4,19 @@ Todas as mudanças relevantes do Mercadinho são registradas aqui.
 O versionamento segue a cadência acordada: cada melhoria incrementa o *minor*
 (`v1.1`, `v1.2` … `v1.10`) e, ao chegar em `v1.10`, o próximo passo é `v2.0`.
 
+## [1.10.0] — Recibos
+
+### Adicionado
+- Reabertura do recibo de uma venda a partir do histórico (botão "Ver recibo",
+  duplo-clique e menu de contexto), em modo "Recibo — Venda #N".
+- Recibo simples padronizado (produtos, quantidade, preço, subtotal, total) com a forma
+  de pagamento — no PDV e no histórico.
+
+### Alterado
+- `ReciboVenda`/`ObterReciboAsync` passam a incluir forma, situação e vencimento;
+  `ReciboWindow` monta a linha de pagamento a partir da venda persistida.
+- Versão do app para 1.10.0.
+
 ## [1.9.0] — Venda fiada (baixa e alertas)
 
 ### Adicionado

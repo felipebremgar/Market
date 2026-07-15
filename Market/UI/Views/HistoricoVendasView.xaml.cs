@@ -13,15 +13,18 @@ public partial class HistoricoVendasView : UserControl
 {
     private readonly HistoricoService _servico;
     private readonly FiadoService _fiado;
+    private readonly VendaService _vendas;
     private readonly ILogger<HistoricoVendasView> _logger;
 
     private FiltroVenda _filtroAtual = FiltroVenda.Nenhum;
 
-    public HistoricoVendasView(HistoricoService servico, FiadoService fiado, ILogger<HistoricoVendasView> logger)
+    public HistoricoVendasView(
+        HistoricoService servico, FiadoService fiado, VendaService vendas, ILogger<HistoricoVendasView> logger)
     {
         InitializeComponent();
         _servico = servico;
         _fiado = fiado;
+        _vendas = vendas;
         _logger = logger;
         Loaded += async (_, _) => await CarregarAsync(FiltroVenda.Nenhum);
     }
@@ -68,6 +71,33 @@ public partial class HistoricoVendasView : UserControl
         {
             _logger.LogError(ex, "Falha ao carregar itens da venda {Id}.", venda.Id);
             MostrarErro("Não foi possível carregar os itens da venda.");
+        }
+    }
+
+    // ----- Recibo -----
+
+    private void GridVendas_DoubleClick(object sender, MouseButtonEventArgs e) => _ = AbrirReciboAsync();
+
+    private void BtnRecibo_Click(object sender, RoutedEventArgs e) => _ = AbrirReciboAsync();
+
+    private async Task AbrirReciboAsync()
+    {
+        if (GridVendas.SelectedItem is not VendaResumo venda)
+        {
+            Notificacao.Aviso("Selecione uma venda para ver o recibo.", autoDismiss: true);
+            return;
+        }
+
+        try
+        {
+            var recibo = await _vendas.ObterReciboAsync(venda.Id);
+            if (recibo is null) { Notificacao.Erro("Recibo não encontrado."); return; }
+            new ReciboWindow(recibo, historico: true) { Owner = Window.GetWindow(this) }.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao abrir o recibo da venda {Id}.", venda.Id);
+            Notificacao.Erro("Não foi possível abrir o recibo.");
         }
     }
 

@@ -1,4 +1,5 @@
 using Market.Application.Services;
+using Market.Domain;
 using Market.Tests.Infra;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -54,6 +55,20 @@ public class ReciboTests
         Assert.NotNull(recibo);
         Assert.Null(recibo!.ClienteNome);
         Assert.Null(recibo.ClienteCpf);
+    }
+
+    // v1.10 — o recibo carrega a forma de pagamento persistida (para reabrir pelo histórico)
+    [Fact]
+    public async Task Recibo_traz_a_forma_de_pagamento()
+    {
+        using var banco = new BancoDeTeste();
+        var m = banco.CriarMercadoria(estoque: 10, precoVenda: 100);
+        var servico = CriarServico(banco);
+        var venda = await servico.FinalizarVendaAsync(null, new[] { new ItemCarrinho(m.Id, 1) }, FormaPagamento.Pix);
+
+        var recibo = await servico.ObterReciboAsync(venda.IdGerado!.Value);
+
+        Assert.Equal(FormaPagamento.Pix, recibo!.Forma);
     }
 
     // T37 — venda inexistente => null
